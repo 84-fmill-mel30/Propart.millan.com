@@ -1,1 +1,219 @@
 
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner V32 - SEGURO</title>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: sans-serif; margin: 0; padding: 15px; user-select: none; }
+        h2 { border-bottom: 2px solid #ffd700; padding-bottom: 10px; color: #ffd700; text-align: center; }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn:active { background: #ffd700; color: #000; }
+        
+        .panel { display: none; background: #1e1e1e; padding: 15px; border-radius: 10px; border: 1px solid #444; margin-top: 20px; }
+        .panel.active { display: block; }
+        
+        .log-box { font-family: monospace; font-size: 0.8rem; color: #0f0; background: #000; padding: 10px; height: 100px; overflow-y: scroll; border: 1px solid #333; margin-top: 20px; }
+        
+        .code-item { background: #002244; color: #00ccff; padding: 10px; margin-bottom: 5px; border-radius: 5px; border-left: 4px solid #00ccff; }
+    </style>
+</head>
+<body>
+
+    <h2>PROPART MILLÁN V32</h2>
+
+    <div id="main-menu">
+        <button class="btn" style="border-color:#0f0" onclick="iniciarConexion()">🔌 CONECTAR ESCÁNER</button>
+        <button class="btn" onclick="mostrarPanel('panel-manual')">📖 VER BIBLIOTECA DE FALLAS</button>
+        <button class="btn" onclick="mostrarPanel('panel-sensores')">📊 VER SENSORES EN VIVO</button>
+    </div>
+
+    <div id="panel-sensores" class="panel">
+        <button class="btn" style="background:#550000" onclick="volver()">X CERRAR</button>
+        <h3 style="text-align:center; color:#ffd700" id="live-display">--</h3>
+        <p style="text-align:center; color:#aaa;" id="live-label">Esperando dato...</p>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button class="btn" onclick="pedir('RPM')">RPM</button>
+            <button class="btn" onclick="pedir('TPS')">TPS</button>
+            <button class="btn" onclick="pedir('MAF')">MAF</button>
+            <button class="btn" onclick="pedir('VOLT')">VOLT</button>
+        </div>
+        
+        <br>
+        <button class="btn" style="border-color:#0f0" onclick="leerCodigos()">🔍 LEER CÓDIGOS</button>
+        <button class="btn" style="border-color:#f00" onclick="borrarCodigos()">🗑️ BORRAR CÓDIGOS</button>
+        <div id="dtc-result" style="margin-top:10px; color:#fff;"></div>
+    </div>
+
+    <div id="panel-manual" class="panel">
+        <button class="btn" style="background:#550000" onclick="volver()">X CERRAR</button>
+        <h3>Tus Soluciones:</h3>
+        
+        <div class="code-item">
+            <strong>P0036 (Sensor O2):</strong><br>
+            El cableado del sensor (abajo, después del catalizador) está quemado o trozado.
+        </div>
+        <div class="code-item">
+            <strong>P0343 (Sensor Árbol):</strong><br>
+            Señal Alta. Limpiar las virutas metálicas del imán del sensor CMP.
+        </div>
+        <div class="code-item">
+            <strong>P0606 (Computadora):</strong><br>
+            Error de procesador. Revisa que el alternador no cargue más de 15V y tierras de la ECU.
+        </div>
+        <div class="code-item">
+            <strong>P0351 - P0354 (Bobinas):</strong><br>
+            Falso contacto en el arnés principal de la bobina. Revisa pines doblados.
+        </div>
+    </div>
+
+    <div class="log-box" id="console">Sistema iniciado...</div>
+
+<script>
+    // --- LÓGICA ULTRA SEGURA ---
+    function log(msg) {
+        let c = document.getElementById('console');
+        c.innerHTML += "<div>> " + msg + "</div>";
+        c.scrollTop = c.scrollHeight;
+    }
+
+    function mostrarPanel(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        log("Abriendo panel: " + id);
+    }
+
+    function volver() {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        log("Volviendo al menú");
+        detener();
+    }
+
+    // --- BLUETOOTH ---
+    let device, server, service, char, timer;
+    const SVC_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb'; // Genérico común
+    const CHR_UUID = '0000ffe1-0000-1000-8000-00805f9b34fb'; 
+
+    async function iniciarConexion() {
+        try {
+            log("Solicitando Bluetooth...");
+            device = await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true,
+                optionalServices: [SVC_UUID, 'e7810a71-73ae-499d-8c15-faa9aef0c3f2']
+            });
+
+            log("Conectando...");
+            server = await device.gatt.connect();
+            
+            // Intento 1: Genérico (Más común en ELM327 chinos)
+            try {
+                service = await server.getPrimaryService(SVC_UUID);
+                char = await service.getCharacteristic(CHR_UUID);
+            } catch (e) {
+                // Intento 2: Vgate
+                service = await server.getPrimaryService('e7810a71-73ae-499d-8c15-faa9aef0c3f2');
+                char = await service.getCharacteristic('bef8d6c9-9c21-4c9e-b632-bd58c1009f9f');
+            }
+
+            await char.startNotifications();
+            char.addEventListener('characteristicvaluechanged', recibirDatos);
+            
+            log("✅ CONECTADO");
+            log("Iniciando VW...");
+            
+            await enviar("AT Z");
+            await enviar("AT SP 3"); // Golf A4 usa Protocolo 3
+            await enviar("AT IIA 33");
+            await enviar("0100"); // Despertar
+            
+            mostrarPanel('panel-sensores');
+
+        } catch (err) {
+            log("❌ ERROR: " + err);
+            alert("No se pudo conectar: " + err);
+        }
+    }
+
+    async function enviar(cmd) {
+        if (!char) return;
+        await char.writeValue(new TextEncoder().encode(cmd + "\r"));
+        // Pequeña pausa para no saturar
+        await new Promise(r => setTimeout(r, 200));
+    }
+
+    function recibirDatos(event) {
+        let text = new TextDecoder().decode(event.target.value).replace(/>/g,'').trim();
+        let hex = text.replace(/\s/g, '');
+
+        // DETECTAR CÓDIGOS
+        if(hex.startsWith("43")) {
+            let res = "";
+            for(let i=2; i<hex.length; i+=4) {
+                let code = hex.substr(i,4);
+                if(code !== "0000") res += "P" + code + " ";
+            }
+            document.getElementById('dtc-result').innerText = res || "Sin fallas";
+            log("Códigos: " + res);
+        }
+
+        // DETECTAR SENSORES
+        if(hex.includes("410C")) { // RPM
+             let val = parseInt(hex.substr(hex.indexOf("410C")+4, 4), 16) / 4;
+             document.getElementById('live-display').innerText = Math.round(val) + " RPM";
+        }
+        if(hex.includes("4111")) { // TPS
+             let val = parseInt(hex.substr(hex.indexOf("4111")+4, 2), 16) * 100 / 255;
+             document.getElementById('live-display').innerText = Math.round(val) + " %";
+        }
+        if(text.includes("V") && text.length < 10) { // Voltaje
+            document.getElementById('live-display').innerText = text;
+        }
+    }
+
+    // --- COMANDOS ---
+    function pedir(tipo) {
+        detener();
+        document.getElementById('live-label').innerText = "Leyendo " + tipo + "...";
+        let cmd = "0100";
+        if(tipo === 'RPM') cmd = "010C";
+        if(tipo === 'TPS') cmd = "0111"; // TPS estándar
+        if(tipo === 'MAF') cmd = "0110";
+        if(tipo === 'VOLT') cmd = "AT RV";
+
+        timer = setInterval(() => enviar(cmd), 500); // Medio segundo
+    }
+
+    async function leerCodigos() {
+        detener();
+        document.getElementById('dtc-result').innerText = "Escaneando...";
+        await enviar("03");
+    }
+
+    async function borrarCodigos() {
+        if(confirm("¿Borrar?")) await enviar("04");
+    }
+
+    function detener() {
+        clearInterval(timer);
+    }
+
+</script>
+</body>
+</html>
