@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROPART OS | MASTER SCANNER V2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --blue: #00f3ff; --purple: #bc13fe; --dark: #050505; --green: #0f0; }
+        body { background: var(--dark); color: white; font-family: 'Roboto Mono', monospace; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        
+        .top-bar { background: #000; padding: 15px; border-bottom: 2px solid var(--blue); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 15px var(--blue); }
+        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--blue); }
+
+        .screen { display: none; padding: 20px; animation: slideIn 0.3s ease-out; }
+        .screen.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* BUSCADOR ESTILO ESCÁNER */
+        .search-container { background: #111; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 20px; }
+        .dtc-input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--blue); color: var(--blue); font-family: 'Orbitron'; font-size: 1.5rem; text-align: center; box-sizing: border-box; }
+        
+        /* TARJETAS DE RESULTADOS */
+        .result-card { background: #111; border-left: 5px solid var(--purple); padding: 20px; border-radius: 5px; margin-top: 20px; display: none; }
+        .result-title { color: var(--blue); font-family: 'Orbitron'; margin-bottom: 10px; }
+        .step { margin-bottom: 10px; padding-left: 15px; border-left: 2px solid #444; }
+
+        /* MÓDULO CALIBRACIÓN */
+        .calib-box { background: #001520; border: 1px dashed var(--green); padding: 15px; border-radius: 5px; margin-top: 10px; }
+
+        /* NAVEGACIÓN */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 2px solid var(--purple); display: flex; justify-content: space-around; padding: 12px 0; z-index: 100; }
+        .nav-item { color: #666; font-size: 0.75rem; text-align: center; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--blue); text-shadow: 0 0 8px var(--blue); font-weight: bold; }
+        .nav-item i { display: block; font-size: 1.2rem; margin-bottom: 3px; }
+
+        .btn-action { background: var(--blue); color: black; border: none; padding: 12px; width: 100%; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="logo">PROPART <span style="font-size: 0.6em;">V2.1</span></div>
+        <div id="clock" style="font-size: 0.8rem; color: var(--green);">00:00:00</div>
+    </div>
+
+    <div id="screen-scan" class="screen active">
+        <div class="search-container">
+            <h3 style="color: var(--blue); margin-top: 0;">SCANNER ENGINE</h3>
+            <input type="text" id="dtcField" class="dtc-input" placeholder="P0000">
+            <button class="btn-action" onclick="diagnosticar()">INICIAR DIAGNÓSTICO</button>
+        </div>
+
+        <div id="diagResult" class="result-card">
+            <h2 id="resCode" class="result-title"></h2>
+            <div class="step"><b>Descripción:</b> <span id="resDesc"></span></div>
+            <div class="step" style="color: #ffaa00;"><b>Prueba:</b> <span id="resTest"></span></div>
+            <div class="step" style="color: var(--green);"><b>Reparación:</b> <span id="resFix"></span></div>
+        </div>
+    </div>
+
+    <div id="screen-calib" class="screen">
+        <h2 style="color: var(--blue); font-family: 'Orbitron';">CALIBRACIONES</h2>
+        <div class="calib-box">
+            <h3 style="color: var(--green);">Cuerpo Acel. Nissan (Sentra/Tiida)</h3>
+            <p>1. Motor a Temp de operación.</p>
+            <p>2. Switch ON 2 seg, OFF 10 seg.</p>
+            <p>3. Pedal a fondo 5 veces en 5 seg.</p>
+            <p>4. Esperar 7 seg, pisar pedal hasta que parpadee Check.</p>
+        </div>
+        <div class="calib-box" style="border-color: var(--purple);">
+            <h3 style="color: var(--purple);">Ajuste Básico VW (VAG-COM)</h3>
+            <p>Canal 060 para aceleradores electrónicos.</p>
+            <p>Canal 098 para aceleradores de chicote con sensor.</p>
+        </div>
+    </div>
+
+    <div id="screen-live" class="screen">
+        <h2 style="color: var(--blue); font-family: 'Orbitron';">DATA STREAM</h2>
+        <div class="result-card" style="display: block; border-left-color: var(--green);">
+            <div class="result-title">SENSOR CMP / CKP</div>
+            <div class="step"><b>Señal CMP:</b> 5V / 0V (Digital)</div>
+            <div class="step"><b>Resistencia CKP:</b> 800 - 1200 Ω (Inductivo)</div>
+            <div style="background: #222; height: 60px; border-radius: 5px; margin-top: 10px; position: relative; overflow: hidden;">
+                <div style="width: 100%; height: 2px; background: var(--green); position: absolute; top: 30px;"></div>
+                <div style="width: 10px; height: 40px; background: var(--green); position: absolute; left: 20%; top: 10px; box-shadow: 0 0 10px var(--green);"></div>
+                <div style="width: 10px; height: 40px; background: var(--green); position: absolute; left: 40%; top: 10px; box-shadow: 0 0 10px var(--green);"></div>
+                <div style="width: 10px; height: 40px; background: var(--green); position: absolute; left: 60%; top: 10px; box-shadow: 0 0 10px var(--green);"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="setTab('scan', this)">SCAN</div>
+        <div class="nav-item" onclick="setTab('calib', this)">ADAPT</div>
+        <div class="nav-item" onclick="setTab('live', this)">LIVE</div>
+        <div class="nav-item" onclick="window.location.href='https://wa.me/527776838196'">HELP</div>
+    </div>
+
+    <script>
+        // Reloj
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+        }, 1000);
+
+        // Lógica Pestañas
+        function setTab(screenId, el) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            el.classList.add('active');
+        }
+
+        // Lógica de Diagnóstico
+        const bd_dtc = {
+            "P0300": { "t": "Misfire Aleatorio", "d": "Falla de encendido en varios cilindros.", "p": "Medir presión de combustible (45-50 PSI).", "f": "Revisar bobinas y fugas de vacío." },
+            "P0101": { "t": "Rango Sensor MAF", "d": "Señal fuera de rango esperada.", "p": "Masa de aire en ralentí: 2.5 - 4.5 g/s.", "f": "Limpiar sensor MAF o revisar arnés." },
+            "P0335": { "t": "Circuito Sensor CKP", "d": "No hay señal del Cigüeñal.", "p": "Verificar 5V de referencia y tierra.", "f": "Reemplazar sensor CKP o revisar cableado." }
+        };
+
+        function diagnosticar() {
+            let code = document.getElementById('dtcField').value.toUpperCase();
+            let card = document.getElementById('diagResult');
+            
+            if(bd_dtc[code]) {
+                card.style.display = 'block';
+                document.getElementById('resCode').innerText = code + " - " + bd_dtc[code].t;
+                document.getElementById('resDesc').innerText = bd_dtc[code].d;
+                document.getElementById('resTest').innerText = bd_dtc[code].p;
+                document.getElementById('resFix').innerText = bd_dtc[code].f;
+            } else {
+                alert("Código no encontrado en base local. Consultando con Julss...");
+            }
+        }
+    </script>
+</body>
+</html>
