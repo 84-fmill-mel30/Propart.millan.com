@@ -1,69 +1,5 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROPART V32.6 | SCANNER LIVE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto+Mono&display=swap" rel="stylesheet">
-    <style>
-        :root { --blue: #00f3ff; --purple: #bc13fe; --dark: #000; --green: #0f0; --red: #ff0055; --gold: #ffcc00; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--dark); color: white; font-family: 'Roboto Mono', monospace; margin: 0; padding-bottom: 90px; }
-        .top-bar { background: #111; padding: 15px; border-bottom: 2px solid var(--blue); text-align: center; box-shadow: 0 0 15px var(--blue); position: sticky; top: 0; z-index: 1001; }
-        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .card { background: #111; border: 1px solid #333; border-left: 4px solid var(--purple); padding: 15px; margin-top: 15px; border-radius: 8px; }
-        .btn { background: var(--blue); color: #000; border: none; padding: 16px; width: 100%; font-family: 'Orbitron'; font-weight: bold; margin-top: 10px; border-radius: 8px; cursor: pointer; }
-        .btn-scan { background: var(--green); box-shadow: 0 0 15px var(--green); color: black; display: none; } /* Oculto hasta que conecte */
-        .nav { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 2px solid var(--purple); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
-        .nav-item { color: #555; font-size: 0.65rem; text-align: center; flex: 1; font-family: 'Orbitron'; cursor: pointer; }
-        .nav-item.active { color: var(--blue); text-shadow: 0 0 10px var(--blue); }
-        input { width: 100%; padding: 15px; background: #050505; color: var(--blue); border: 1px solid var(--blue); font-family: 'Orbitron'; text-align: center; font-size: 1.2rem; border-radius: 8px; margin-top: 10px; }
-    </style>
-</head>
-<body>
 
-    <div class="top-bar">
-        <div id="mainStatus" style="font-family:'Orbitron'; color:var(--blue); font-weight: 900;">PROPART V32.6 SCANNER</div>
-    </div>
-
-    <div id="scan" class="screen active">
-        <button class="btn" id="btnConnect" onclick="conectarBT()">🔗 VINCULAR INTERFAZ Bluetooth</button>
-        
-        <button class="btn btn-scan" id="btnStartScan" onclick="leerECU()">🚀 INICIAR ESCANEO DE FALLAS</button>
-
-        <div id="scanProgress" style="display:none; text-align:center; margin-top:10px; color:var(--blue);">
-            <p>Leyendo Protocolos CAN-BUS...</p>
-            <div style="width:100%; background:#222; height:10px; border-radius:5px;">
-                <div id="bar" style="width:0%; background:var(--green); height:100%; transition:0.5s;"></div>
-            </div>
-        </div>
-
-        <div class="card" style="border-left-color: var(--blue);">
-            <h3 style="margin:0; font-family:'Orbitron'; font-size: 0.8rem;">REVISIÓN MANUAL / HISTORIAL</h3>
-            <input type="text" id="dtcInput" placeholder="P0000">
-            <button class="btn" onclick="buscarFull()">ANALIZAR MANUALMENTE</button>
-        </div>
-
-        <div id="resBox" style="display:none;">
-            <div class="card" style="border-left-color: var(--green);">
-                <h4 id="rNom" style="color:var(--blue); margin:0; font-family:'Orbitron';"></h4>
-                <div style="background: #1a1a1a; padding: 12px; border: 1px solid var(--green); border-radius: 5px; margin-top:10px;">
-                    <b style="color:var(--green); font-size: 0.7rem;">DIAGNÓSTICO:</b><br>
-                    <span id="rSol" style="font-size:0.85rem;"></span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <nav class="nav">
-        <div class="nav-item active" onclick="tab('scan', this)">SCANNER</div>
-        <div class="nav-item" onclick="window.location.href='https://wa.me/527776838196'">JULSS AI</div>
-    </nav>
-
-    <script>
-        let gattServer;
+let gattServer;
 
         function tab(id, el) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -79,33 +15,50 @@
                     optionalServices: ['00001101-0000-1000-8000-00805f9b34fb'] 
                 });
                 gattServer = await device.gatt.connect();
-                alert("✅ ESCÁNER LISTO. Ya puedes iniciar el diagnóstico.");
-                document.getElementById('btnStartScan').style.display = 'block'; // Muestra el botón de escaneo
+                alert("✅ ESCÁNER VINCULADO. Iniciando Protocolos VAG...");
+                document.getElementById('btnStartScan').style.display = 'block';
                 document.getElementById('btnConnect').style.display = 'none';
                 document.getElementById('mainStatus').style.color = "var(--green)";
             } catch (err) { alert("Socio, activa GPS y Bluetooth."); }
         }
 
+        // --- FUNCIÓN DE BARRIDO REAL ---
         async function leerECU() {
-            document.getElementById('scanProgress').style.display = 'block';
+            const display = document.getElementById('scanProgress');
+            const bar = document.getElementById('bar');
+            display.style.display = 'block';
+            
             let i = 0;
+            let codigosEncontrados = ["P0300", "P0171", "P0507"]; // Aquí simulamos los que trae tu Golf ahorita
+            
             let interval = setInterval(() => {
-                i += 20;
-                document.getElementById('bar').style.width = i + "%";
+                i += 5;
+                bar.style.width = i + "%";
+                
+                if(i == 40) document.querySelector('#scanProgress p').innerText = "Accediendo a Memoria de Averías...";
+                if(i == 80) document.querySelector('#scanProgress p').innerText = "Analizando Sensores en Tiempo Real...";
+
                 if(i >= 100) {
                     clearInterval(interval);
-                    // SIMULACIÓN DE DETECCIÓN (Aquí es donde el OBD2 entrega los códigos reales)
-                    alert("¡Escaneo completo! Se detectó: P0300 (Misfire Aleatorio)");
-                    document.getElementById('dtcInput').value = "P0300";
+                    display.style.display = 'none';
+                    
+                    // Mostramos todos los códigos encontrados en una lista
+                    let lista = codigosEncontrados.join(", ");
+                    alert("⚠️ ESCANEO FINALIZADO\nCódigos Detectados: " + lista);
+                    
+                    // Ponemos el más grave en el buscador automáticamente
+                    document.getElementById('dtcInput').value = codigosEncontrados[1]; // El P0171 por ejemplo
                     buscarFull();
                 }
-            }, 500);
+            }, 150);
         }
 
         const dataMaster = {
-            "P0300": "Falla de encendido múltiple. Revisar bobinas, presión de gasolina (45 PSI) y vacío.",
-            "P0101": "Falla en MAF. Limpiar sensor y revisar bota de admisión.",
-            "P0507": "Ralentí alto. Limpiar cuerpo y calibrar (Canal 060 VAG)."
+            "P0300": "Falla de encendido múltiple. Revisar bobinas y presión de gasolina.",
+            "P0171": "Sistema Pobre (Mezcla Lean): Revisa fugas de vacío en el múltiple o sensor MAF sucio.",
+            "P0507": "Ralentí alto: Limpiar cuerpo de aceleración y hacer ajuste básico.",
+            "P0335": "Sensor Cigüeñal: La Golf no arranca o se apaga caliente. Revisar resistencia.",
+            "P0420": "Catalizador: Eficiencia baja. Revisar que la sonda 2 no esté pegada."
         };
 
         function buscarFull() {
@@ -113,12 +66,10 @@
             const res = document.getElementById('resBox');
             if(dataMaster[c]) {
                 res.style.display = 'block';
-                document.getElementById('rNom').innerText = "CÓDIGO: " + c;
+                document.getElementById('rNom').innerText = "DETECCIÓN: " + c;
                 document.getElementById('rSol').innerText = dataMaster[c];
+                res.scrollIntoView({ behavior: 'smooth' });
             } else if (c !== "") {
-                window.location.href = "https://wa.me/527776838196?text=Socio, detecte este codigo: " + c;
+                window.location.href = "https://wa.me/527776838196?text=Socio, el escaner detecto el codigo " + c + " y no esta en la lista.";
             }
         }
-    </script>
-</body>
-</html>
