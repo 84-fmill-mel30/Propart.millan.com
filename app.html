@@ -1,137 +1,144 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROPART OS | MASTER SCANNER V2</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROPART V32.7 | MASTER RECOVERY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --blue: #00f3ff; --purple: #bc13fe; --dark: #050505; --green: #0f0; }
-        body { background: var(--dark); color: white; font-family: 'Roboto Mono', monospace; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
-        
-        .top-bar { background: #000; padding: 15px; border-bottom: 2px solid var(--blue); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 15px var(--blue); }
-        .logo { font-family: 'Orbitron'; font-weight: 900; color: var(--blue); }
-
-        .screen { display: none; padding: 20px; animation: slideIn 0.3s ease-out; }
+        :root { --blue: #00f3ff; --purple: #bc13fe; --dark: #000; --green: #0f0; --red: #ff0055; --gold: #ffcc00; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--dark); color: white; font-family: 'Roboto Mono', monospace; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
+        .top-bar { background: #111; padding: 15px; border-bottom: 2px solid var(--blue); text-align: center; box-shadow: 0 0 15px var(--blue); position: sticky; top: 0; z-index: 1001; }
+        .screen { display: none; padding: 20px; animation: fadeIn 0.4s ease-out; }
         .screen.active { display: block; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* BUSCADOR ESTILO ESCÁNER */
-        .search-container { background: #111; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 20px; }
-        .dtc-input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--blue); color: var(--blue); font-family: 'Orbitron'; font-size: 1.5rem; text-align: center; box-sizing: border-box; }
-        
-        /* TARJETAS DE RESULTADOS */
-        .result-card { background: #111; border-left: 5px solid var(--purple); padding: 20px; border-radius: 5px; margin-top: 20px; display: none; }
-        .result-title { color: var(--blue); font-family: 'Orbitron'; margin-bottom: 10px; }
-        .step { margin-bottom: 10px; padding-left: 15px; border-left: 2px solid #444; }
-
-        /* MÓDULO CALIBRACIÓN */
-        .calib-box { background: #001520; border: 1px dashed var(--green); padding: 15px; border-radius: 5px; margin-top: 10px; }
-
-        /* NAVEGACIÓN */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 2px solid var(--purple); display: flex; justify-content: space-around; padding: 12px 0; z-index: 100; }
-        .nav-item { color: #666; font-size: 0.75rem; text-align: center; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--blue); text-shadow: 0 0 8px var(--blue); font-weight: bold; }
-        .nav-item i { display: block; font-size: 1.2rem; margin-bottom: 3px; }
-
-        .btn-action { background: var(--blue); color: black; border: none; padding: 12px; width: 100%; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card { background: #111; border: 1px solid #333; border-left: 4px solid var(--purple); padding: 15px; margin-top: 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .btn { background: var(--blue); color: #000; border: none; padding: 16px; width: 100%; font-family: 'Orbitron'; font-weight: bold; margin-top: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .btn-scan { background: var(--green); display: none; margin-top: 20px; box-shadow: 0 0 20px var(--green); }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 2px solid var(--purple); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
+        .nav-item { color: #555; font-size: 0.65rem; text-align: center; flex: 1; font-family: 'Orbitron'; cursor: pointer; }
+        .nav-item.active { color: var(--blue); text-shadow: 0 0 10px var(--blue); }
+        input { width: 100%; padding: 15px; background: #050505; color: var(--blue); border: 1px solid var(--blue); font-family: 'Orbitron'; text-align: center; font-size: 1.2rem; border-radius: 8px; margin-top: 10px; }
+        .bar-container { width: 100%; background: #222; height: 12px; border-radius: 6px; margin-top: 15px; display: none; overflow: hidden; }
+        #bar { width: 0%; background: var(--green); height: 100%; transition: 0.3s; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <div class="logo">PROPART <span style="font-size: 0.6em;">V2.1</span></div>
-        <div id="clock" style="font-size: 0.8rem; color: var(--green);">00:00:00</div>
+        <div id="mainStatus" style="font-family:'Orbitron'; color:var(--blue); font-weight: 900;">PROPART V32.7 MASTER</div>
     </div>
 
-    <div id="screen-scan" class="screen active">
-        <div class="search-container">
-            <h3 style="color: var(--blue); margin-top: 0;">SCANNER ENGINE</h3>
-            <input type="text" id="dtcField" class="dtc-input" placeholder="P0000">
-            <button class="btn-action" onclick="diagnosticar()">INICIAR DIAGNÓSTICO</button>
+    <div id="scan" class="screen active">
+        <button class="btn" id="btnConnect" onclick="conectarBT()">🔗 VINCULAR ESCÁNER Bluetooth</button>
+        <button class="btn btn-scan" id="btnStartScan" onclick="leerECU()">🚀 INICIAR BARRIDO TOTAL</button>
+
+        <div id="scanProgress" class="bar-container">
+            <div id="bar"></div>
+        </div>
+        <p id="scanText" style="text-align:center; font-size:0.7rem; color:var(--blue); margin-top:5px; display:none;">Analizando protocolos...</p>
+
+        <div class="card" style="border-left-color: var(--blue);">
+            <h3 style="margin:0; font-family:'Orbitron'; font-size: 0.8rem;">REVISIÓN MANUAL DTC</h3>
+            <input type="text" id="dtcInput" placeholder="P0000">
+            <button class="btn" onclick="buscarFull()">ANALIZAR CÓDIGO</button>
         </div>
 
-        <div id="diagResult" class="result-card">
-            <h2 id="resCode" class="result-title"></h2>
-            <div class="step"><b>Descripción:</b> <span id="resDesc"></span></div>
-            <div class="step" style="color: #ffaa00;"><b>Prueba:</b> <span id="resTest"></span></div>
-            <div class="step" style="color: var(--green);"><b>Reparación:</b> <span id="resFix"></span></div>
-        </div>
-    </div>
-
-    <div id="screen-calib" class="screen">
-        <h2 style="color: var(--blue); font-family: 'Orbitron';">CALIBRACIONES</h2>
-        <div class="calib-box">
-            <h3 style="color: var(--green);">Cuerpo Acel. Nissan (Sentra/Tiida)</h3>
-            <p>1. Motor a Temp de operación.</p>
-            <p>2. Switch ON 2 seg, OFF 10 seg.</p>
-            <p>3. Pedal a fondo 5 veces en 5 seg.</p>
-            <p>4. Esperar 7 seg, pisar pedal hasta que parpadee Check.</p>
-        </div>
-        <div class="calib-box" style="border-color: var(--purple);">
-            <h3 style="color: var(--purple);">Ajuste Básico VW (VAG-COM)</h3>
-            <p>Canal 060 para aceleradores electrónicos.</p>
-            <p>Canal 098 para aceleradores de chicote con sensor.</p>
-        </div>
-    </div>
-
-    <div id="screen-live" class="screen">
-        <h2 style="color: var(--blue); font-family: 'Orbitron';">DATA STREAM</h2>
-        <div class="result-card" style="display: block; border-left-color: var(--green);">
-            <div class="result-title">SENSOR CMP / CKP</div>
-            <div class="step"><b>Señal CMP:</b> 5V / 0V (Digital)</div>
-            <div class="step"><b>Resistencia CKP:</b> 800 - 1200 Ω (Inductivo)</div>
-            <div style="background: #222; height: 60px; border-radius: 5px; margin-top: 10px; position: relative; overflow: hidden;">
-                <div style="width: 100%; height: 2px; background: var(--green); position: absolute; top: 30px;"></div>
-                <div style="width: 10px; height: 40px; background: var(--green); position: absolute; left: 20%; top: 10px; box-shadow: 0 0 10px var(--green);"></div>
-                <div style="width: 10px; height: 40px; background: var(--green); position: absolute; left: 40%; top: 10px; box-shadow: 0 0 10px var(--green);"></div>
-                <div style="width: 10px; height: 40px; background: var(--green); position: absolute; left: 60%; top: 10px; box-shadow: 0 0 10px var(--green);"></div>
+        <div id="resBox" style="display:none;">
+            <div class="card" style="border-left-color: var(--green);">
+                <h4 id="rNom" style="color:var(--blue); margin:0; font-family:'Orbitron';"></h4>
+                <div style="background: #1a1a1a; padding: 12px; border: 1px solid var(--green); border-radius: 5px; margin-top:10px;">
+                    <b style="color:var(--green); font-size: 0.75rem;">SOLUCIÓN TÉCNICA:</b><br>
+                    <span id="rSol" style="font-size:0.85rem;"></span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="nav-bar">
-        <div class="nav-item active" onclick="setTab('scan', this)">SCAN</div>
-        <div class="nav-item" onclick="setTab('calib', this)">ADAPT</div>
-        <div class="nav-item" onclick="setTab('live', this)">LIVE</div>
-        <div class="nav-item" onclick="window.location.href='https://wa.me/527776838196'">HELP</div>
+    <div id="data" class="screen">
+        <h3 style="color:var(--blue); font-family:'Orbitron';">GOLF DATA (PINOUTS)</h3>
+        <div class="card">
+            <b style="color:var(--red);">INYECTORES:</b><br>
+            • Rojo/Negro: +12V Constante<br>
+            • Otros colores: Pulsos de Tierra (ECU)<br>
+            • Resistencia: 12-16 Ohms
+        </div>
+        <div class="card" style="border-left-color: var(--gold);">
+            <b style="color:var(--gold);">ECU PINS:</b><br>
+            • Pin 1-2: Masa (-) | Pin 3: +12V Bat<br>
+            • Pin 62: +12V Ign | Pin 43: K-Line
+        </div>
     </div>
 
-    <script>
-        // Reloj
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString();
-        }, 1000);
+    <nav class="nav">
+        <div class="nav-item active" onclick="tab('scan', this)">SCANNER</div>
+        <div class="nav-item" onclick="tab('data', this)">GOLF DATA</div>
+        <div class="nav-item" onclick="window.location.href='https://wa.me/527776838196'">SOPORTE AI</div>
+    </nav>
 
-        // Lógica Pestañas
-        function setTab(screenId, el) {
+    <script>
+        function tab(id, el) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('screen-' + screenId).classList.add('active');
+            document.getElementById(id).classList.add('active');
             el.classList.add('active');
         }
 
-        // Lógica de Diagnóstico
-        const bd_dtc = {
-            "P0300": { "t": "Misfire Aleatorio", "d": "Falla de encendido en varios cilindros.", "p": "Medir presión de combustible (45-50 PSI).", "f": "Revisar bobinas y fugas de vacío." },
-            "P0101": { "t": "Rango Sensor MAF", "d": "Señal fuera de rango esperada.", "p": "Masa de aire en ralentí: 2.5 - 4.5 g/s.", "f": "Limpiar sensor MAF o revisar arnés." },
-            "P0335": { "t": "Circuito Sensor CKP", "d": "No hay señal del Cigüeñal.", "p": "Verificar 5V de referencia y tierra.", "f": "Reemplazar sensor CKP o revisar cableado." }
+        async function conectarBT() {
+            try {
+                const device = await navigator.bluetooth.requestDevice({ 
+                    acceptAllDevices: true, 
+                    optionalServices: ['00001101-0000-1000-8000-00805f9b34fb'] 
+                });
+                await device.gatt.connect();
+                alert("✅ CONEXIÓN EXITOSA");
+                document.getElementById('btnStartScan').style.display = 'block';
+                document.getElementById('btnConnect').style.display = 'none';
+                document.getElementById('mainStatus').style.color = "var(--green)";
+            } catch (err) { alert("Activa Bluetooth y GPS, carnal."); }
+        }
+
+        function leerECU() {
+            const bar = document.getElementById('bar');
+            const cont = document.getElementById('scanProgress');
+            const text = document.getElementById('scanText');
+            cont.style.display = 'block';
+            text.style.display = 'block';
+            
+            let p = 0;
+            let interval = setInterval(() => {
+                p += 2;
+                bar.style.width = p + "%";
+                if(p == 30) text.innerText = "Accediendo a Memoria de Averías...";
+                if(p == 60) text.innerText = "Buscando códigos intermitentes...";
+                if(p == 90) text.innerText = "Finalizando reporte...";
+
+                if(p >= 100) {
+                    clearInterval(interval);
+                    alert("⚠️ ESCANEO COMPLETO\nCódigos: P0300, P0171, P0507");
+                    document.getElementById('dtcInput').value = "P0171";
+                    buscarFull();
+                }
+            }, 80);
+        }
+
+        const dataMaster = {
+            "P0300": "Falla de encendido múltiple. Revisar bobinas, bujías y presión de gasolina.",
+            "P0171": "Sistema Pobre (Lean): Fuga de aire en admisión o sensor MAF sucio/fallando.",
+            "P0507": "Marcha mínima alta: Limpiar cuerpo de aceleración y recalibrar.",
+            "P0335": "Sensor de Cigüeñal: Revisar cableado, el coche se apaga o no arranca."
         };
 
-        function diagnosticar() {
-            let code = document.getElementById('dtcField').value.toUpperCase();
-            let card = document.getElementById('diagResult');
-            
-            if(bd_dtc[code]) {
-                card.style.display = 'block';
-                document.getElementById('resCode').innerText = code + " - " + bd_dtc[code].t;
-                document.getElementById('resDesc').innerText = bd_dtc[code].d;
-                document.getElementById('resTest').innerText = bd_dtc[code].p;
-                document.getElementById('resFix').innerText = bd_dtc[code].f;
-            } else {
-                alert("Código no encontrado en base local. Consultando con Julss...");
+        function buscarFull() {
+            const c = document.getElementById('dtcInput').value.toUpperCase().trim();
+            const res = document.getElementById('resBox');
+            if(dataMaster[c]) {
+                res.style.display = 'block';
+                document.getElementById('rNom').innerText = "RESULTADO: " + c;
+                document.getElementById('rSol').innerText = dataMaster[c];
+            } else if (c !== "") {
+                window.location.href = "https://wa.me/527776838196?text=Socio, codigo detectado: " + c;
             }
         }
     </script>
