@@ -2,389 +2,435 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROPART MASTER HUB V3.5 | QUANTUM VAG</title>
-    <!-- Librerías de Ingeniería -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROPART V12 | Millan Premium Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        :root { --neon: #3b82f6; --bg: #020617; --card: #0f172a; --amber: #fbbf24; --emerald: #10b981; --rose: #f43f5e; }
-        body { 
-            background-color: var(--bg); 
-            color: #f8fafc; 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            overflow: hidden; 
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;700&display=swap');
+
+        :root {
+            --p-blue: #3498ff;
+            --p-dark: #020617;
+            --p-accent: #00f2ff;
+            --p-red: #ef4444;
+            --p-green: #10b981;
+        }
+
+        body {
+            background-color: var(--p-dark);
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
             height: 100vh;
-            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        
-        .glass { 
-            background: rgba(15, 23, 42, 0.95); 
-            backdrop-filter: blur(25px); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            border-radius: 1.5rem; 
-        }
-        
-        .active-tab { 
-            background: rgba(59, 130, 246, 0.1); 
-            border-bottom: 3px solid var(--neon); 
-            color: var(--neon); 
-        }
-        
-        /* Contenedor del Holograma */
-        #hologram-viewport {
-            width: 100%;
-            height: 320px;
-            cursor: grab;
-            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.15) 0%, transparent 85%);
-            touch-action: none;
+
+        .heading-font { font-family: 'Orbitron', sans-serif; }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 1.5rem;
         }
 
-        .btn-action { 
-            background: #1e293b; 
-            border: 1px solid #334155; 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .btn-action:active { transform: scale(0.95); background: #334155; }
-        
-        .terminal-box { 
-            background: rgba(0,0,0,0.9); 
-            border: 1px solid rgba(59, 130, 246, 0.2); 
-            border-radius: 1.2rem; 
-            font-family: 'Courier New', monospace; 
+        .neon-border {
+            border: 1px solid rgba(52, 152, 255, 0.3);
+            box-shadow: 0 0 15px rgba(52, 152, 255, 0.1);
         }
 
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        
-        @keyframes pulse-status { 0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px var(--neon)); } 50% { opacity: 0.4; } }
-        .status-pill { animation: pulse-status 2s infinite; }
-        
-        .fault-card { 
-            background: rgba(244, 63, 94, 0.1); 
-            border-left: 4px solid var(--rose); 
-            animation: slideIn 0.3s ease-out;
+        .btn-large {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
         }
-        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .btn-large:hover {
+            border-color: var(--p-blue);
+            transform: scale(1.02);
+            background: rgba(52, 152, 255, 0.1);
+        }
+
+        .btn-large.active {
+            background: var(--p-blue);
+            border-color: var(--p-accent);
+            box-shadow: 0 0 25px rgba(52, 152, 255, 0.3);
+            color: white;
+        }
+
+        .scan-anim {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--p-accent), transparent);
+            position: absolute;
+            top: 0;
+            animation: scanning 4s infinite linear;
+            z-index: 10;
+        }
+
+        @keyframes scanning {
+            0% { top: 0; opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="flex flex-col select-none">
+<body class="p-4 gap-4">
 
-    <!-- Header Identidad Propart Master -->
-    <header class="glass mx-3 mt-3 p-4 flex flex-col items-center border-b border-white/5 sticky top-0 z-50">
-        <div class="flex items-center gap-4 w-full justify-between">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-blue-600 rounded-lg shadow-lg font-black text-white text-[10px] uppercase">PROPART</div>
-                <h1 class="text-xl font-black tracking-tighter uppercase italic leading-none">Master <span class="text-blue-500">Suite V3.5</span></h1>
+    <!-- TOP BAR -->
+    <header class="glass-panel p-4 px-8 flex justify-between items-center neon-border border-b-4 border-b-blue-600/30">
+        <div class="flex items-center gap-6">
+            <div class="bg-blue-600 p-3 rounded-2xl shadow-xl shadow-blue-500/30">
+                <i class="fas fa-microchip text-2xl text-white"></i>
             </div>
-            <div id="connection-indicator" class="flex items-center gap-2 bg-slate-900 px-3 py-1 rounded-full border border-white/10">
-                <div id="bt-led" class="w-2.5 h-2.5 rounded-full bg-slate-700 transition-all duration-500"></div>
-                <span id="bt-status" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest italic">VAG Offline</span>
+            <div>
+                <h1 class="heading-font text-2xl font-black italic tracking-tighter uppercase">PROPART <span class="text-blue-400 font-normal">V12</span></h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Base de Datos Pro part/Date Blindada</p>
             </div>
         </div>
-        
-        <!-- Navegación de Pestañas SPA -->
-        <nav class="flex mt-4 bg-slate-900/80 p-1 rounded-2xl border border-white/5 w-full max-w-md gap-1">
-            <button onclick="switchTab('diag')" id="tab-diag-btn" class="tab-btn py-2 text-[10px] font-black uppercase rounded-xl flex-1 active-tab">Diagnóstico</button>
-            <button onclick="switchTab('lab')" id="tab-lab-btn" class="tab-btn py-2 text-[10px] font-black uppercase rounded-xl flex-1 text-slate-500">Ingeniería 3D</button>
-            <button onclick="switchTab('stats')" id="tab-stats-btn" class="tab-btn py-2 text-[10px] font-black uppercase rounded-xl flex-1 text-slate-500">Telemetría</button>
-        </nav>
+
+        <div class="flex items-center gap-10">
+            <div class="text-right">
+                <span class="text-[9px] font-black text-green-400 uppercase tracking-widest animate-pulse flex items-center justify-end gap-2">
+                    <i class="fas fa-circle text-[6px]"></i> V-Link Online
+                </span>
+                <p class="heading-font text-sm font-bold text-white tracking-widest uppercase">Socio Millan</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-slate-800 border-2 border-blue-500/40 flex items-center justify-center">
+                <i class="fas fa-user-shield text-blue-400 text-xl"></i>
+            </div>
+        </div>
     </header>
 
-    <main class="flex-grow overflow-y-auto custom-scroll p-4 space-y-6">
-
-        <!-- SECCIÓN: DIAGNÓSTICO (Handshake VW Golf) -->
-        <section id="content-diag" class="tab-content block space-y-4">
-            <div class="flex justify-between items-center px-2">
-                <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Panel de Control Golf</h2>
-                <span class="text-[9px] bg-blue-500/10 text-blue-500 px-2 py-1 rounded font-black uppercase status-pill">Socio Millán Active</span>
-            </div>
-
-            <!-- Botonera de Operaciones -->
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="btConnect()" id="connectMainBtn" class="btn-action p-6 rounded-3xl flex flex-col items-center gap-3 shadow-xl border border-blue-500/20">
-                    <i class="fas fa-plug text-blue-400 text-xl"></i>
-                    <span class="text-[9px] font-black uppercase tracking-widest">Enlazar vLink</span>
+    <main class="flex-grow grid grid-cols-12 gap-4 overflow-hidden">
+        
+        <!-- LATERAL IZQUIERDO: FILTROS Y MODOS -->
+        <aside class="col-span-3 flex flex-col gap-4 overflow-hidden">
+            <div class="glass-panel p-6 flex flex-col gap-3">
+                <h3 class="heading-font text-[11px] font-bold text-blue-400 uppercase mb-2 tracking-widest">Navegación del Sistema</h3>
+                <button onclick="setView('live')" id="btn-live" class="btn-large active w-full p-4 rounded-2xl flex items-center gap-4 font-bold text-sm">
+                    <i class="fas fa-wave-square"></i> Escáner V-Link
                 </button>
-                <button onclick="escanearFallas()" class="btn-action p-6 rounded-3xl flex flex-col items-center gap-3 shadow-xl border border-amber-500/10">
-                    <i class="fas fa-microscope text-amber-500 text-xl"></i>
-                    <span class="text-[9px] font-black uppercase tracking-widest">Escanear DTC</span>
-                </button>
-                <button onclick="btSend('010C')" class="btn-action p-6 rounded-3xl flex flex-col items-center gap-3 shadow-xl border border-emerald-500/10">
-                    <i class="fas fa-tachometer-alt text-emerald-500 text-xl"></i>
-                    <span class="text-[9px] font-black uppercase tracking-widest">Ver RPM</span>
-                </button>
-                <button onclick="borrarFallas()" class="btn-action p-6 rounded-3xl flex flex-col items-center gap-3 shadow-xl border border-rose-500/20">
-                    <i class="fas fa-trash-restore text-rose-500 text-xl"></i>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-rose-500">Borrar Fallas</span>
+                <button onclick="setView('tech')" id="btn-tech" class="btn-large w-full p-4 rounded-2xl flex items-center gap-4 font-bold text-sm">
+                    <i class="fas fa-project-diagram"></i> Pro part/Date DB
                 </button>
             </div>
 
-            <!-- Lista de Resultados Dinámicos -->
-            <div id="results-log" class="space-y-3">
-                <h3 class="text-[10px] font-black text-slate-500 uppercase px-2 tracking-widest italic">Resultados de Memoria</h3>
-                <div id="placeholder-results" class="text-center py-8 border-2 border-dashed border-slate-800 rounded-3xl">
-                    <i class="fas fa-car-battery text-slate-800 text-3xl mb-2"></i>
-                    <p class="text-[10px] text-slate-600 font-bold uppercase tracking-tighter">Esperando datos de la Golf 2005...</p>
+            <div class="glass-panel p-6 flex-grow flex flex-col overflow-hidden">
+                <h3 class="heading-font text-[11px] font-bold text-blue-400 uppercase mb-4 tracking-widest">Filtros de Sensores</h3>
+                <div class="space-y-3 overflow-y-auto custom-scrollbar pr-2" id="sensorFilters">
+                    <button onclick="toggleSignal(0, this)" class="btn-large active w-full p-5 rounded-2xl flex justify-between items-center group">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-black uppercase text-white">Pedal APP 1</span>
+                            <span class="text-[9px] text-blue-300/50 font-mono tracking-tighter">SIGNAL 0-5V</span>
+                        </div>
+                        <i class="fas fa-check-circle text-blue-400 text-lg"></i>
+                    </button>
+                    <button onclick="toggleSignal(1, this)" class="btn-large active w-full p-5 rounded-2xl flex justify-between items-center group">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-black uppercase text-white">Pedal APP 2</span>
+                            <span class="text-[9px] text-green-300/50 font-mono tracking-tighter">SIGNAL 0-5V</span>
+                        </div>
+                        <i class="fas fa-check-circle text-green-400 text-lg"></i>
+                    </button>
+                    <button onclick="toggleSignal(2, this)" class="btn-large w-full p-5 rounded-2xl flex justify-between items-center opacity-40 group">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-black uppercase text-slate-400">Inyectores</span>
+                            <span class="text-[9px] text-amber-300/50 font-mono tracking-tighter">PULSE (ms)</span>
+                        </div>
+                        <i class="fas fa-circle-notch text-lg"></i>
+                    </button>
+                    <button onclick="toggleSignal(3, this)" class="btn-large w-full p-5 rounded-2xl flex justify-between items-center opacity-40 border-l-4 border-l-red-600 group">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-black uppercase text-slate-400">Sensor MAF</span>
+                            <span class="text-[9px] text-red-300/50 font-mono tracking-tighter">FLOW (g/s)</span>
+                        </div>
+                        <i class="fas fa-circle-notch text-lg"></i>
+                    </button>
                 </div>
             </div>
+        </aside>
 
-            <!-- Terminal de Ingeniería (Visualización de Trama Real) -->
-            <div class="terminal-box p-5 flex flex-col h-72 overflow-hidden shadow-2xl border border-white/5">
-                <div class="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
-                    <span class="text-[10px] font-black text-blue-400 uppercase italic">Propart Engineering Log</span>
-                    <button onclick="document.getElementById('console').innerHTML = ''" class="text-[9px] text-slate-500 font-bold uppercase">Limpiar</button>
-                </div>
-                <div id="console" class="flex-grow font-mono text-[10px] text-blue-300 overflow-y-auto custom-scroll space-y-1">
-                    <div class="text-slate-600 italic font-bold">> Sistema V3.5 Iniciado. Socio Millán al mando.</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: LABORATORIO 3D (Inspección Técnica) -->
-        <section id="content-lab" class="tab-content hidden space-y-4">
-            <div class="flex justify-between items-center px-2">
-                <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Inspección de Componentes</h2>
-                <span class="text-[9px] text-blue-400 font-bold uppercase status-pill">Render Hologram Active</span>
-            </div>
-
-            <div class="glass overflow-hidden relative border border-blue-500/20 shadow-2xl">
-                <div id="hologram-viewport"></div>
-                <div class="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
-                    <p id="proj-name" class="text-sm font-black text-white uppercase tracking-[0.3em] drop-shadow-lg italic">Modelo de Ingeniería</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-3">
-                <div onclick="update3D('engine')" class="glass p-5 flex justify-between items-center border-l-4 border-blue-500 active:scale-95 transition-all cursor-pointer">
-                    <div>
-                        <h4 class="font-bold text-xs uppercase italic text-blue-400">Bloque Motor VAG</h4>
-                        <p class="text-[9px] text-slate-500 mt-1 uppercase font-bold">Mapeo de Sensores e Inyección</p>
+        <!-- VISUALIZADOR CENTRAL: GRÁFICAS Y ESQUEMAS -->
+        <section class="col-span-6 flex flex-col gap-4 overflow-hidden">
+            <div class="glass-panel flex-grow relative overflow-hidden flex flex-col p-8 border-t-4 border-t-blue-500">
+                <div class="scan-anim"></div>
+                
+                <!-- MONITOR VIVO -->
+                <div id="liveView" class="h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex flex-col">
+                            <h2 class="heading-font text-2xl font-black italic tracking-tighter uppercase">Live <span class="text-blue-500 underline">Predictive</span> Monitor</h2>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.4em]">Procesamiento 60 FPS | Sin Retraso</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="px-4 py-2 bg-slate-900/90 rounded-xl border border-blue-500/20 text-[10px] font-bold text-blue-400 shadow-lg">V-LINK V2</span>
+                        </div>
                     </div>
-                    <i class="fas fa-car-side text-blue-500 text-lg"></i>
+                    <div class="flex-grow">
+                        <canvas id="liveChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- MONITOR ESQUEMAS -->
+                <div id="techView" class="hidden h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="heading-font text-2xl font-black italic uppercase"><i class="fas fa-project-diagram mr-3 text-blue-400"></i>Esquemas Pro part/Date</h2>
+                        <div class="relative w-72">
+                            <input type="text" id="dbSearch" placeholder="Busca: Toyota 2007..." class="w-full bg-slate-900/90 border-2 border-slate-700 rounded-2xl py-3 px-5 text-xs focus:outline-none focus:border-blue-500 transition-all font-bold">
+                            <i class="fas fa-search absolute right-4 top-3.5 text-slate-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow bg-black/40 rounded-[2.5rem] border border-blue-500/10 flex items-center justify-center p-4 relative overflow-hidden">
+                        <canvas id="diagramCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TERMINAL DE DTCs -->
+            <div class="glass-panel h-44 p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="heading-font text-xs font-bold text-red-500 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle animate-pulse"></i> Fallas del Sistema (DTC)
+                    </h3>
+                    <button class="text-[10px] font-bold text-slate-500 hover:text-white transition uppercase">Limpiar Scanner</button>
+                </div>
+                <div class="flex gap-4 overflow-x-auto custom-scrollbar pb-2">
+                    <div class="min-w-[300px] bg-red-500/10 border border-red-500/20 p-5 rounded-2xl flex flex-col justify-between hover:bg-red-500/20 transition">
+                        <div class="flex justify-between items-start">
+                            <span class="text-2xl font-black text-red-500 italic tracking-tighter">P0121</span>
+                            <span class="text-[9px] bg-red-600 text-white px-2 py-1 rounded-full font-bold uppercase">Crítico</span>
+                        </div>
+                        <p class="text-[11px] text-slate-300 font-bold leading-snug">Rango del circuito del sensor de posición del acelerador/pedal.</p>
+                    </div>
+                    <div class="min-w-[300px] bg-blue-500/10 border border-blue-500/20 p-5 rounded-2xl flex flex-col justify-between opacity-80">
+                        <div class="flex justify-between items-start">
+                            <span class="text-2xl font-black text-blue-400 italic tracking-tighter">P0300</span>
+                            <span class="text-[9px] bg-blue-500 text-white px-2 py-1 rounded-full font-bold uppercase">Pendiente</span>
+                        </div>
+                        <p class="text-[11px] text-slate-300 font-bold leading-snug">Fallo de encendido detectado en cilindros aleatorios.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- LATERAL DERECHO: JULS AI Y BLINDAJE -->
+        <aside class="col-span-3 flex flex-col gap-4 overflow-hidden">
+            <!-- ASISTENTE JULS -->
+            <div class="glass-panel p-6 h-1/2 flex flex-col border-r-4 border-r-blue-600">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="w-14 h-14 bg-blue-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/50 rotate-3">
+                        <i class="fas fa-robot text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="heading-font text-sm font-black italic text-white uppercase tracking-wider">JULS AI</h4>
+                        <span class="text-[10px] text-green-400 font-bold uppercase flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Sistema Predictivo
+                        </span>
+                    </div>
+                </div>
+
+                <div id="terminal" class="flex-grow bg-slate-950/80 rounded-3xl p-5 font-mono text-[11px] leading-relaxed overflow-y-auto custom-scrollbar text-blue-100 border border-blue-500/10">
+                    <p class="text-blue-500 font-bold mb-2">>> JULS V12 INITIALIZED</p>
+                    <p class="mb-3 text-slate-500 italic">// Analizando datos de V-Link...</p>
+                    <p class="mb-4 text-white">Socio <span class="text-blue-400 font-bold uppercase">Millan</span>, los datos coinciden con la <span class="text-white underline">Base de Datos Pro part/Date</span>: El desfase indica limpieza de potenciómetro urgente.</p>
+                    <div class="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 mt-2 shadow-inner">
+                        <p class="text-green-400 font-bold uppercase text-[9px] mb-2">Diagnóstico ATSG 2017:</p>
+                        <ul class="space-y-1 text-blue-200">
+                            <li>- Pinout Toyota 2007 cargado</li>
+                            <li>- Revisar Pin 3 (Señal APP1)</li>
+                            <li>- Torque de ECU: 25Nm</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-4 relative">
+                    <input type="text" placeholder="Ordena algo, socio..." class="w-full bg-slate-900/80 border-2 border-slate-700 rounded-2xl py-4 px-6 text-xs focus:outline-none focus:border-blue-500 transition-all font-bold">
+                    <button class="absolute right-5 top-4 text-blue-500 hover:text-blue-300 transition-transform active:scale-90"><i class="fas fa-paper-plane text-xl"></i></button>
+                </div>
+            </div>
+
+            <!-- DB BLINDADA -->
+            <div class="glass-panel p-6 flex-grow flex flex-col overflow-hidden">
+                <h3 class="heading-font text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest flex items-center justify-between italic">
+                    Pro part/Date (Blindado) <span><i class="fas fa-shield-alt text-blue-500"></i></span>
+                </h3>
+                <div class="space-y-3 overflow-y-auto custom-scrollbar pr-2">
+                    <div class="p-4 bg-slate-800/60 rounded-2xl border border-white/5 flex items-center justify-between hover:border-blue-500 transition-all cursor-pointer group hover:bg-slate-800">
+                        <div class="flex items-center gap-4">
+                            <i class="fas fa-lock text-blue-400 text-lg"></i>
+                            <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">ATSG_Transmisiones.propart</span>
+                        </div>
+                        <i class="fas fa-check-circle text-slate-600 group-hover:text-green-500"></i>
+                    </div>
+                    <div class="p-4 bg-slate-800/60 rounded-2xl border border-white/5 flex items-center justify-between hover:border-blue-500 transition-all cursor-pointer group hover:bg-slate-800">
+                        <div class="flex items-center gap-4">
+                            <i class="fas fa-lock text-blue-400 text-lg"></i>
+                            <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">Dast_Data_Pinouts.propart</span>
+                        </div>
+                        <i class="fas fa-check-circle text-slate-600 group-hover:text-green-500"></i>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </main>
 
-    <!-- Barra de Comandos Millán (Línea de Ingeniería Manual) -->
-    <footer class="p-4 glass border-t border-white/5 sticky bottom-0 mx-3 mb-3">
-        <div class="flex flex-col gap-2">
-            <div class="flex gap-2">
-                <input type="text" id="cmdInput" placeholder="Comando AT/HEX Manual (Ej: 03)..." class="flex-grow bg-slate-950 border border-slate-800 rounded-2xl px-5 py-3.5 text-white text-xs outline-none focus:ring-1 focus:ring-blue-500 transition-all font-bold uppercase tracking-wider">
-                <button onclick="btSendManual()" class="bg-blue-600 px-7 rounded-2xl flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-blue-900/20">
-                    <i class="fas fa-paper-plane text-white text-sm"></i>
-                </button>
-            </div>
-            <p class="text-center text-[7px] font-bold text-slate-800 uppercase tracking-[0.5em] mt-2">
-                JULS AI SPECIALIST | PROPART DIAGNOSTIC © 2026 | SOCIO MILLÁN
-            </p>
-        </div>
-    </footer>
-
     <script>
-        // --- MOTOR TITANIUM GS V3.5 (FIX VAG GOLF) ---
-        let obdChar = null;
-        // UUIDs Maestros: Agregamos una lista masiva para que el vLink no se pierda en el Golf
-        const MASTER_UUIDS = [
-            '0000fff0-0000-1000-8000-00805f9b34fb', // Standard vLink/ELM
-            '49535343-fe7d-4ae5-8fa9-9fafd205e455', // iOS vLink
-            '0000ffe0-0000-1000-8000-00805f9b34fb', // Serial BLE
-            '000018f0-0000-1000-8000-00805f9b34fb', // OBDII Generic
-            '00001101-0000-1000-8000-00805f9b34fb'  // SPP Classic
-        ];
-
-        function log(msg, type = 'sys') {
-            const consoleEl = document.getElementById('console');
-            const time = new Date().toLocaleTimeString([], { hour12: false });
-            const prefix = type === 'tx' ? 'ENVIANDO > ' : type === 'rx' ? 'RECIBIDO < ' : 'SISTEMA | ';
-            const color = type === 'tx' ? 'text-white font-bold' : type === 'rx' ? 'text-blue-400 font-black' : 'text-slate-600';
-            consoleEl.innerHTML += `<div class="fade-in"><span class="text-slate-800 font-black">[${time}]</span> <span class="${color}">${prefix}${msg}</span></div>`;
-            consoleEl.scrollTop = consoleEl.scrollHeight;
-        }
-
-        async function btConnect() {
-            const btn = document.getElementById('connectMainBtn');
-            try {
-                log("Iniciando búsqueda Propart para VAG Golf...");
-                btn.innerHTML = '<i class="fas fa-cog fa-spin text-blue-400"></i><span class="text-[9px] font-black uppercase ml-2">Enlazando...</span>';
-                
-                const device = await navigator.bluetooth.requestDevice({ 
-                    acceptAllDevices: true, 
-                    optionalServices: MASTER_UUIDS 
-                });
-                
-                log(`Socio Millán, detectado: ${device.name}`);
-                const server = await device.gatt.connect();
-                log("Servidor GATT activo. Buscando puerto de datos...");
-                
-                const services = await server.getPrimaryServices();
-                
-                // Discovery dinámico de canales (Evitamos el error "No Services matching found")
-                for (const s of services) {
-                    const chars = await s.getCharacteristics();
-                    for (const c of chars) { if (c.properties.write || c.properties.notify) { obdChar = c; break; } }
-                    if (obdChar) break;
+        // --- MOTOR DE GRÁFICAS V-LINK ---
+        const ctx = document.getElementById('liveChart').getContext('2d');
+        const points = 60;
+        
+        const chartData = {
+            labels: Array(points).fill(''),
+            datasets: [
+                {
+                    label: 'APP 1',
+                    borderColor: '#3498ff',
+                    borderWidth: 4,
+                    pointRadius: 0,
+                    tension: 0.4,
+                    data: Array(points).fill(40),
+                    hidden: false
+                },
+                {
+                    label: 'APP 2',
+                    borderColor: '#10b981',
+                    borderWidth: 4,
+                    pointRadius: 0,
+                    tension: 0.4,
+                    data: Array(points).fill(38),
+                    hidden: false
+                },
+                {
+                    label: 'INJ',
+                    borderColor: '#f59e0b',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    tension: 0.2,
+                    data: Array(points).fill(20),
+                    hidden: true
+                },
+                {
+                    label: 'MAF',
+                    borderColor: '#ef4444',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    tension: 0.3,
+                    data: Array(points).fill(15),
+                    hidden: true
                 }
+            ]
+        };
 
-                if (!obdChar) throw new Error("Hardware de datos bloqueado por la ECU.");
+        const liveChart = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b', font: { size: 10 } }, min: 0, max: 100 },
+                    x: { display: false }
+                },
+                plugins: { legend: { display: false } },
+                animation: false
+            }
+        });
 
-                if (obdChar.properties.notify) {
-                    await obdChar.startNotifications();
-                    obdChar.addEventListener('characteristicvaluechanged', (e) => { 
-                        const val = new TextDecoder().decode(e.target.value).trim();
-                        if(val) handleOBDResponse(val);
-                    });
+        // Simulador de datos V-Link
+        let baseVal = 40;
+        setInterval(() => {
+            baseVal = Math.max(10, Math.min(90, baseVal + (Math.random() * 8 - 4)));
+            chartData.datasets[0].data.shift();
+            chartData.datasets[0].data.push(baseVal + (Math.random() * 2));
+            chartData.datasets[1].data.shift();
+            chartData.datasets[1].data.push(baseVal * 0.95 + (Math.random() * 4));
+            chartData.datasets[2].data.shift();
+            chartData.datasets[2].data.push(Math.random() * 20 + 10);
+            chartData.datasets[3].data.shift();
+            chartData.datasets[3].data.push(baseVal * 0.8);
+            liveChart.update();
+        }, 80);
+
+        // --- CONTROL DE VISTAS ---
+        function setView(mode) {
+            document.getElementById('liveView').classList.toggle('hidden', mode !== 'live');
+            document.getElementById('techView').classList.toggle('hidden', mode !== 'tech');
+            document.getElementById('btn-live').classList.toggle('active', mode === 'live');
+            document.getElementById('btn-tech').classList.toggle('active', mode === 'tech');
+            if(mode === 'tech') setTimeout(drawToyota, 100);
+        }
+
+        function toggleSignal(idx, btn) {
+            const isHidden = !chartData.datasets[idx].hidden;
+            chartData.datasets[idx].hidden = isHidden;
+            btn.classList.toggle('active', !isHidden);
+            btn.classList.toggle('opacity-40', isHidden);
+            btn.querySelector('i').className = isHidden ? 'fas fa-circle-notch' : 'fas fa-check-circle';
+            liveChart.update();
+        }
+
+        // --- MOTOR CANVAS PARA DIAGRAMAS ---
+        const dCanvas = document.getElementById('diagramCanvas');
+        const dCtx = dCanvas.getContext('2d');
+
+        function drawToyota() {
+            const container = dCanvas.parentElement;
+            dCanvas.width = container.clientWidth - 40;
+            dCanvas.height = container.clientHeight - 40;
+            const cx = dCanvas.width / 2;
+            const cy = dCanvas.height / 2;
+            dCtx.clearRect(0,0,dCanvas.width,dCanvas.height);
+            
+            // Cuerpo ECU
+            dCtx.strokeStyle = '#3498ff';
+            dCtx.lineWidth = 5;
+            dCtx.strokeRect(cx - 180, cy - 120, 360, 200);
+            dCtx.fillStyle = 'rgba(52, 152, 255, 0.05)';
+            dCtx.fillRect(cx - 180, cy - 120, 360, 200);
+
+            // Título
+            dCtx.fillStyle = 'white';
+            dCtx.font = 'bold 24px Orbitron';
+            dCtx.textAlign = 'center';
+            dCtx.fillText('TOYOTA ECU CONTROL', cx, cy - 55);
+            dCtx.font = '12px Inter';
+            dCtx.fillText('BASE DE DATOS: PRO PART/DATE (BLINDADO)', cx, cy - 30);
+
+            // Pines
+            for(let i=0; i<14; i++) {
+                const px = (cx - 165) + (i * 25);
+                const py = cy + 40;
+                const isSignal = (i === 3 || i === 4);
+                dCtx.fillStyle = isSignal ? '#00f2ff' : '#1e293b';
+                dCtx.fillRect(px, py, 18, 40);
+                if(isSignal && i === 3) {
+                    dCtx.strokeStyle = '#00f2ff';
+                    dCtx.beginPath(); dCtx.moveTo(px+9, py+40); dCtx.lineTo(px+9, py+90); dCtx.stroke();
+                    dCtx.fillStyle = '#00f2ff'; dCtx.font = 'bold 10px Orbitron';
+                    dCtx.fillText('PIN 3: APP1', px+9, py+105);
                 }
-
-                document.getElementById('bt-led').className = "w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_12px_#3b82f6]";
-                document.getElementById('bt-status').innerText = "Golf Online";
-                document.getElementById('bt-status').className = "text-[9px] font-bold text-blue-500 uppercase tracking-widest italic";
-                btn.innerHTML = '<i class="fas fa-check-circle text-emerald-500"></i><span class="text-[9px] font-black uppercase ml-2">VINCULADO</span>';
-                
-                log("Enlace total. Mandando ATZ para resetear el chip.");
-                await btSend("ATZ");
-                await btSend("ATSP0"); // Forzar búsqueda de protocolo automático
-            } catch (err) { 
-                log(`ERROR DE CONEXIÓN: ${err.message}`, 'sys'); 
-                btn.innerHTML = '<i class="fas fa-plug text-rose-500"></i><span class="text-[9px] font-black uppercase ml-2 text-rose-500">REINTENTAR</span>';
             }
         }
 
-        async function btSend(cmd, wait = 0) {
-            if (!obdChar) return;
-            try {
-                // El ELM327 requiere retorno de carro \r para ejecutar el comando
-                await obdChar.writeValue(new TextEncoder().encode(cmd + "\r"));
-                log(cmd, 'tx');
-                if (wait > 0) await new Promise(r => setTimeout(r, wait));
-            } catch (e) { log("Error de canal."); }
-        }
-
-        function btSendManual() {
-            const input = document.getElementById('cmdInput');
-            if (input.value) { btSend(input.value.toUpperCase()); input.value = ""; }
-        }
-
-        // --- LÓGICA DE DIAGNÓSTICO PROFUNDO ---
-        async function escanearFallas() {
-            if (!obdChar) { alert("¡Socio! Primero conecta el vLink."); return; }
-            log("Pidiendo DTCs almacenados al Golf (Modo 03)...");
-            document.getElementById('placeholder-results').innerHTML = '<i class="fas fa-search-location fa-spin text-blue-500 text-2xl mb-2"></i><p class="text-[9px] text-blue-500 font-bold uppercase">Leyendo ECU VAG...</p>';
-            
-            // Limpiamos buffer y mandamos Modo 03
-            await btSend("0100"); // Probar comunicación básica
-            setTimeout(() => { btSend("03"); }, 500); 
-        }
-
-        function handleOBDResponse(data) {
-            log(data, 'rx');
-            if (data.includes("43")) { // Respuesta estándar OBD II Modo 03
-                procesarFallas(data);
-            }
-        }
-
-        function procesarFallas(data) {
-            const container = document.getElementById('results-log');
-            const placeholder = document.getElementById('placeholder-results');
-            if(placeholder) placeholder.remove();
-            
-            // Decodificador de trama: 43 XX YY ZZ...
-            const cleanData = data.replace(/43/g, "").trim().split(" ");
-            if (cleanData[0] === "00") {
-                container.innerHTML += '<div class="text-center py-6 text-emerald-500 font-black text-[10px] uppercase italic">✓ Sin códigos de falla en Golf</div>';
-            } else {
-                mostrarTarjetaFalla("P" + cleanData[0] + (cleanData[1] || "00"));
-            }
-        }
-
-        function mostrarTarjetaFalla(code) {
-            const container = document.getElementById('results-log');
-            const card = document.createElement('div');
-            card.className = "glass p-4 fault-card flex justify-between items-center";
-            card.innerHTML = `
-                <div>
-                    <span class="text-sm font-black text-rose-500 uppercase tracking-tighter">${code}</span>
-                    <p class="text-[9px] text-slate-400 font-bold mt-1 uppercase italic">Falla Detectada en Golf 2005</p>
-                </div>
-                <button onclick="switchTab('lab')" class="text-[8px] bg-rose-500/20 text-rose-500 px-3 py-1 rounded-full font-black uppercase">Ver Pieza</button>
-            `;
-            container.appendChild(card);
-        }
-
-        function borrarFallas() {
-            if(!obdChar) return;
-            if(confirm("¿Seguro carnal? Borrarás el Check Engine de la Golf.")){
-                log("Enviando comando de borrado Modo 04...");
-                btSend("04");
-                setTimeout(() => {
-                    document.getElementById('results-log').innerHTML = '<h3 class="text-[10px] font-black text-slate-500 uppercase px-2 tracking-widest italic">Resultados de Memoria</h3><div id="placeholder-results" class="text-center py-8 border-2 border-dashed border-slate-800 rounded-3xl"><i class="fas fa-check-circle text-emerald-500 text-2xl mb-2"></i><p class="text-[10px] text-emerald-500 font-bold uppercase">Memoria Limpia</p></div>';
-                }, 1500);
-            }
-        }
-
-        // --- NAVEGACIÓN SPA ---
-        function switchTab(id) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active-tab'); b.classList.add('text-slate-500'); });
-            document.getElementById(`content-${id}`).classList.remove('hidden');
-            document.getElementById(`tab-${id}-btn`).classList.add('active-tab');
-            document.getElementById(`tab-${id}-btn`).classList.remove('text-slate-500');
-        }
-
-        // --- MOTOR 3D HOLOGRÁFICO (Three.js) ---
-        let scene, camera, renderer, currentObject;
-        let isMouseDown = false;
-
-        function initThreeJS() {
-            const viewport = document.getElementById('hologram-viewport');
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, viewport.clientWidth / viewport.clientHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(viewport.clientWidth, viewport.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            viewport.appendChild(renderer.domElement);
-
-            const pLight = new THREE.PointLight(0x3b82f6, 5, 100); pLight.position.set(10, 10, 10);
-            scene.add(pLight); scene.add(new THREE.AmbientLight(0x404040, 2));
-            camera.position.z = 5;
-
-            viewport.addEventListener('mousedown', () => isMouseDown = true);
-            window.addEventListener('mouseup', () => isMouseDown = false);
-            viewport.addEventListener('mousemove', (e) => {
-                if (isMouseDown && currentObject) {
-                    currentObject.rotation.y += e.movementX * 0.01;
-                    currentObject.rotation.x += e.movementY * 0.01;
+        document.getElementById('dbSearch').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                const val = e.target.value.toLowerCase();
+                if(val.includes('toyota')) {
+                    setView('tech');
+                    const term = document.getElementById('terminal');
+                    term.innerHTML += `<p class="text-green-400 mt-2 font-bold uppercase tracking-widest text-[9px] animate-pulse">>> CARGANDO TOYOTA 2007 DESDE PRO PART/DATE...</p>`;
+                    term.scrollTop = term.scrollHeight;
                 }
-            });
-            animate();
-            update3D('engine'); 
-        }
-
-        function update3D(type) {
-            if (currentObject) scene.remove(currentObject);
-            const material = new THREE.MeshPhongMaterial({ color: 0x3b82f6, wireframe: true, transparent: true, opacity: 0.8, emissive: 0x3b82f6, emissiveIntensity: 0.6 });
-            let geometry; const nameLabel = document.getElementById('proj-name');
-            
-            if (type === 'engine') {
-                geometry = new THREE.IcosahedronGeometry(2, 1); nameLabel.innerText = "Diagrama de Bloque Motor VW";
             }
-            
-            currentObject = new THREE.Mesh(geometry, material); scene.add(currentObject);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            if (currentObject && !isMouseDown) currentObject.rotation.y += 0.01;
-            renderer.render(scene, camera);
-        }
-
-        window.onload = initThreeJS;
+        });
     </script>
 </body>
 </html>
