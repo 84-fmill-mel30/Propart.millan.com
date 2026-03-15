@@ -3,434 +3,588 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROPART V12 | Millan Premium Edition</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>ProPart AI - Diagnóstico Inteligente</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;700&display=swap');
-
-        :root {
-            --p-blue: #3498ff;
-            --p-dark: #020617;
-            --p-accent: #00f2ff;
-            --p-red: #ef4444;
-            --p-green: #10b981;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
+        
         body {
-            background-color: var(--p-dark);
-            color: #f8fafc;
-            font-family: 'Inter', sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-
-        .heading-font { font-family: 'Orbitron', sans-serif; }
-
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 1.5rem;
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-
-        .neon-border {
-            border: 1px solid rgba(52, 152, 255, 0.3);
-            box-shadow: 0 0 15px rgba(52, 152, 255, 0.1);
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
         }
-
-        .btn-large {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(30, 41, 59, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.05);
-            cursor: pointer;
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
         }
-
-        .btn-large:hover {
-            border-color: var(--p-blue);
-            transform: scale(1.02);
-            background: rgba(52, 152, 255, 0.1);
-        }
-
-        .btn-large.active {
-            background: var(--p-blue);
-            border-color: var(--p-accent);
-            box-shadow: 0 0 25px rgba(52, 152, 255, 0.3);
+        
+        .connection-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
             color: white;
         }
-
-        .scan-anim {
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--p-accent), transparent);
-            position: absolute;
-            top: 0;
-            animation: scanning 4s infinite linear;
-            z-index: 10;
+        
+        .connection-section h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
         }
-
-        @keyframes scanning {
-            0% { top: 0; opacity: 0; }
-            50% { opacity: 0.5; }
-            100% { top: 100%; opacity: 0; }
+        
+        .status {
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
         }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        
+        .status.connected {
+            background: rgba(76, 175, 80, 0.3);
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 15px 25px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .data-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f5f5f5;
+            border-radius: 15px;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .data-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .data-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .data-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+        
+        .data-unit {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+        }
+        
+        .log-entry.error {
+            color: #ff5555;
+        }
+        
+        .log-entry.success {
+            color: #50fa7b;
+        }
+        
+        .log-entry.info {
+            color: #8be9fd;
+        }
+        
+        .uuid-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        
+        .uuid-info strong {
+            color: #ffeb3b;
+        }
+        
+        .brand-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .brand-btn {
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .brand-btn:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+        
+        .brand-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
     </style>
 </head>
-<body class="p-4 gap-4">
-
-    <!-- TOP BAR -->
-    <header class="glass-panel p-4 px-8 flex justify-between items-center neon-border border-b-4 border-b-blue-600/30">
-        <div class="flex items-center gap-6">
-            <div class="bg-blue-600 p-3 rounded-2xl shadow-xl shadow-blue-500/30">
-                <i class="fas fa-microchip text-2xl text-white"></i>
-            </div>
-            <div>
-                <h1 class="heading-font text-2xl font-black italic tracking-tighter uppercase">PROPART <span class="text-blue-400 font-normal">V12</span></h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Base de Datos Pro part/Date Blindada</p>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-10">
-            <div class="text-right">
-                <span class="text-[9px] font-black text-green-400 uppercase tracking-widest animate-pulse flex items-center justify-end gap-2">
-                    <i class="fas fa-circle text-[6px]"></i> V-Link Online
-                </span>
-                <p class="heading-font text-sm font-bold text-white tracking-widest uppercase">Socio Millan</p>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-slate-800 border-2 border-blue-500/40 flex items-center justify-center">
-                <i class="fas fa-user-shield text-blue-400 text-xl"></i>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex-grow grid grid-cols-12 gap-4 overflow-hidden">
+<body>
+    <div class="container">
+        <h1>🔧 PROPART AI</h1>
+        <div class="subtitle">DIAGNÓSTICO PROFESIONAL INTELIGENTE - IOS-Vlink Compatible</div>
         
-        <!-- LATERAL IZQUIERDO: FILTROS Y MODOS -->
-        <aside class="col-span-3 flex flex-col gap-4 overflow-hidden">
-            <div class="glass-panel p-6 flex flex-col gap-3">
-                <h3 class="heading-font text-[11px] font-bold text-blue-400 uppercase mb-2 tracking-widest">Navegación del Sistema</h3>
-                <button onclick="setView('live')" id="btn-live" class="btn-large active w-full p-4 rounded-2xl flex items-center gap-4 font-bold text-sm">
-                    <i class="fas fa-wave-square"></i> Escáner V-Link
-                </button>
-                <button onclick="setView('tech')" id="btn-tech" class="btn-large w-full p-4 rounded-2xl flex items-center gap-4 font-bold text-sm">
-                    <i class="fas fa-project-diagram"></i> Pro part/Date DB
-                </button>
+        <div class="connection-section">
+            <h2>📡 CONEXIÓN ELM327</h2>
+            
+            <div class="uuid-info">
+                <strong>UUID Configurado:</strong> 00001ff0-0000-1000-8000-00805f9b34fb<br>
+                <strong>Compatible con:</strong> IOS-Vlink, iOS V link, ELM327
             </div>
-
-            <div class="glass-panel p-6 flex-grow flex flex-col overflow-hidden">
-                <h3 class="heading-font text-[11px] font-bold text-blue-400 uppercase mb-4 tracking-widest">Filtros de Sensores</h3>
-                <div class="space-y-3 overflow-y-auto custom-scrollbar pr-2" id="sensorFilters">
-                    <button onclick="toggleSignal(0, this)" class="btn-large active w-full p-5 rounded-2xl flex justify-between items-center group">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-black uppercase text-white">Pedal APP 1</span>
-                            <span class="text-[9px] text-blue-300/50 font-mono tracking-tighter">SIGNAL 0-5V</span>
-                        </div>
-                        <i class="fas fa-check-circle text-blue-400 text-lg"></i>
-                    </button>
-                    <button onclick="toggleSignal(1, this)" class="btn-large active w-full p-5 rounded-2xl flex justify-between items-center group">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-black uppercase text-white">Pedal APP 2</span>
-                            <span class="text-[9px] text-green-300/50 font-mono tracking-tighter">SIGNAL 0-5V</span>
-                        </div>
-                        <i class="fas fa-check-circle text-green-400 text-lg"></i>
-                    </button>
-                    <button onclick="toggleSignal(2, this)" class="btn-large w-full p-5 rounded-2xl flex justify-between items-center opacity-40 group">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-black uppercase text-slate-400">Inyectores</span>
-                            <span class="text-[9px] text-amber-300/50 font-mono tracking-tighter">PULSE (ms)</span>
-                        </div>
-                        <i class="fas fa-circle-notch text-lg"></i>
-                    </button>
-                    <button onclick="toggleSignal(3, this)" class="btn-large w-full p-5 rounded-2xl flex justify-between items-center opacity-40 border-l-4 border-l-red-600 group">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-black uppercase text-slate-400">Sensor MAF</span>
-                            <span class="text-[9px] text-red-300/50 font-mono tracking-tighter">FLOW (g/s)</span>
-                        </div>
-                        <i class="fas fa-circle-notch text-lg"></i>
-                    </button>
-                </div>
+            
+            <div id="status" class="status">
+                🔴 Desconectado
             </div>
-        </aside>
-
-        <!-- VISUALIZADOR CENTRAL: GRÁFICAS Y ESQUEMAS -->
-        <section class="col-span-6 flex flex-col gap-4 overflow-hidden">
-            <div class="glass-panel flex-grow relative overflow-hidden flex flex-col p-8 border-t-4 border-t-blue-500">
-                <div class="scan-anim"></div>
-                
-                <!-- MONITOR VIVO -->
-                <div id="liveView" class="h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="flex flex-col">
-                            <h2 class="heading-font text-2xl font-black italic tracking-tighter uppercase">Live <span class="text-blue-500 underline">Predictive</span> Monitor</h2>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.4em]">Procesamiento 60 FPS | Sin Retraso</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-4 py-2 bg-slate-900/90 rounded-xl border border-blue-500/20 text-[10px] font-bold text-blue-400 shadow-lg">V-LINK V2</span>
-                        </div>
-                    </div>
-                    <div class="flex-grow">
-                        <canvas id="liveChart"></canvas>
-                    </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="searchDevice()">🔍 Buscar IOS-Vlink</button>
+                <button class="btn-secondary" onclick="searchAllDevices()">📡 Buscar TODOS</button>
+                <button class="btn-primary" onclick="connectDevice()">🔌 Conectar</button>
+                <button class="btn-danger" onclick="disconnectDevice()">❌ Desconectar</button>
+            </div>
+            
+            <div class="log" id="log">
+                <div class="log-entry info">[INFO] Sistema listo. UUID IOS-Vlink configurado.</div>
+                <div class="log-entry info">[INFO] Presiona "Buscar IOS-Vlink" para comenzar.</div>
+            </div>
+        </div>
+        
+        <div class="data-section">
+            <h2>📊 PARÁMETROS EN TIEMPO REAL</h2>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>RPM Motor</h3>
+                    <div class="data-value" id="rpm">----</div>
+                    <div class="data-unit">rpm</div>
                 </div>
-
-                <!-- MONITOR ESQUEMAS -->
-                <div id="techView" class="hidden h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="heading-font text-2xl font-black italic uppercase"><i class="fas fa-project-diagram mr-3 text-blue-400"></i>Esquemas Pro part/Date</h2>
-                        <div class="relative w-72">
-                            <input type="text" id="dbSearch" placeholder="Busca: Toyota 2007..." class="w-full bg-slate-900/90 border-2 border-slate-700 rounded-2xl py-3 px-5 text-xs focus:outline-none focus:border-blue-500 transition-all font-bold">
-                            <i class="fas fa-search absolute right-4 top-3.5 text-slate-500"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow bg-black/40 rounded-[2.5rem] border border-blue-500/10 flex items-center justify-center p-4 relative overflow-hidden">
-                        <canvas id="diagramCanvas"></canvas>
-                    </div>
+                <div class="data-card">
+                    <h3>Velocidad</h3>
+                    <div class="data-value" id="speed">----</div>
+                    <div class="data-unit">km/h</div>
+                </div>
+                <div class="data-card">
+                    <h3>Temperatura</h3>
+                    <div class="data-value" id="temp">----</div>
+                    <div class="data-unit">°C</div>
+                </div>
+                <div class="data-card">
+                    <h3>Voltaje Batería</h3>
+                    <div class="data-value" id="voltage">----</div>
+                    <div class="data-unit">V</div>
+                </div>
+                <div class="data-card">
+                    <h3>Carga Motor</h3>
+                    <div class="data-value" id="load">----</div>
+                    <div class="data-unit">%</div>
+                </div>
+                <div class="data-card">
+                    <h3>Posición Acelerador</h3>
+                    <div class="data-value" id="throttle">----</div>
+                    <div class="data-unit">%</div>
                 </div>
             </div>
-
-            <!-- TERMINAL DE DTCs -->
-            <div class="glass-panel h-44 p-6 flex flex-col gap-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="heading-font text-xs font-bold text-red-500 uppercase tracking-widest flex items-center gap-2">
-                        <i class="fas fa-exclamation-triangle animate-pulse"></i> Fallas del Sistema (DTC)
-                    </h3>
-                    <button class="text-[10px] font-bold text-slate-500 hover:text-white transition uppercase">Limpiar Scanner</button>
-                </div>
-                <div class="flex gap-4 overflow-x-auto custom-scrollbar pb-2">
-                    <div class="min-w-[300px] bg-red-500/10 border border-red-500/20 p-5 rounded-2xl flex flex-col justify-between hover:bg-red-500/20 transition">
-                        <div class="flex justify-between items-start">
-                            <span class="text-2xl font-black text-red-500 italic tracking-tighter">P0121</span>
-                            <span class="text-[9px] bg-red-600 text-white px-2 py-1 rounded-full font-bold uppercase">Crítico</span>
-                        </div>
-                        <p class="text-[11px] text-slate-300 font-bold leading-snug">Rango del circuito del sensor de posición del acelerador/pedal.</p>
-                    </div>
-                    <div class="min-w-[300px] bg-blue-500/10 border border-blue-500/20 p-5 rounded-2xl flex flex-col justify-between opacity-80">
-                        <div class="flex justify-between items-start">
-                            <span class="text-2xl font-black text-blue-400 italic tracking-tighter">P0300</span>
-                            <span class="text-[9px] bg-blue-500 text-white px-2 py-1 rounded-full font-bold uppercase">Pendiente</span>
-                        </div>
-                        <p class="text-[11px] text-slate-300 font-bold leading-snug">Fallo de encendido detectado en cilindros aleatorios.</p>
-                    </div>
-                </div>
+            
+            <div class="button-group" style="margin-top: 20px;">
+                <button class="btn-primary" onclick="readData()">🔄 Actualizar Datos</button>
+                <button class="btn-secondary" onclick="startMonitoring()">▶️ Monitoreo Continuo</button>
+                <button class="btn-warning" onclick="stopMonitoring()">⏸️ Detener Monitoreo</button>
+                <button class="btn-secondary" onclick="readDTC()">⚠️ Leer Códigos DTC</button>
             </div>
-        </section>
-
-        <!-- LATERAL DERECHO: JULS AI Y BLINDAJE -->
-        <aside class="col-span-3 flex flex-col gap-4 overflow-hidden">
-            <!-- ASISTENTE JULS -->
-            <div class="glass-panel p-6 h-1/2 flex flex-col border-r-4 border-r-blue-600">
-                <div class="flex items-center gap-4 mb-5">
-                    <div class="w-14 h-14 bg-blue-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/50 rotate-3">
-                        <i class="fas fa-robot text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="heading-font text-sm font-black italic text-white uppercase tracking-wider">JULS AI</h4>
-                        <span class="text-[10px] text-green-400 font-bold uppercase flex items-center gap-1">
-                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Sistema Predictivo
-                        </span>
-                    </div>
-                </div>
-
-                <div id="terminal" class="flex-grow bg-slate-950/80 rounded-3xl p-5 font-mono text-[11px] leading-relaxed overflow-y-auto custom-scrollbar text-blue-100 border border-blue-500/10">
-                    <p class="text-blue-500 font-bold mb-2">>> JULS V12 INITIALIZED</p>
-                    <p class="mb-3 text-slate-500 italic">// Analizando datos de V-Link...</p>
-                    <p class="mb-4 text-white">Socio <span class="text-blue-400 font-bold uppercase">Millan</span>, los datos coinciden con la <span class="text-white underline">Base de Datos Pro part/Date</span>: El desfase indica limpieza de potenciómetro urgente.</p>
-                    <div class="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 mt-2 shadow-inner">
-                        <p class="text-green-400 font-bold uppercase text-[9px] mb-2">Diagnóstico ATSG 2017:</p>
-                        <ul class="space-y-1 text-blue-200">
-                            <li>- Pinout Toyota 2007 cargado</li>
-                            <li>- Revisar Pin 3 (Señal APP1)</li>
-                            <li>- Torque de ECU: 25Nm</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="mt-4 relative">
-                    <input type="text" placeholder="Ordena algo, socio..." class="w-full bg-slate-900/80 border-2 border-slate-700 rounded-2xl py-4 px-6 text-xs focus:outline-none focus:border-blue-500 transition-all font-bold">
-                    <button class="absolute right-5 top-4 text-blue-500 hover:text-blue-300 transition-transform active:scale-90"><i class="fas fa-paper-plane text-xl"></i></button>
-                </div>
-            </div>
-
-            <!-- DB BLINDADA -->
-            <div class="glass-panel p-6 flex-grow flex flex-col overflow-hidden">
-                <h3 class="heading-font text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest flex items-center justify-between italic">
-                    Pro part/Date (Blindado) <span><i class="fas fa-shield-alt text-blue-500"></i></span>
-                </h3>
-                <div class="space-y-3 overflow-y-auto custom-scrollbar pr-2">
-                    <div class="p-4 bg-slate-800/60 rounded-2xl border border-white/5 flex items-center justify-between hover:border-blue-500 transition-all cursor-pointer group hover:bg-slate-800">
-                        <div class="flex items-center gap-4">
-                            <i class="fas fa-lock text-blue-400 text-lg"></i>
-                            <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">ATSG_Transmisiones.propart</span>
-                        </div>
-                        <i class="fas fa-check-circle text-slate-600 group-hover:text-green-500"></i>
-                    </div>
-                    <div class="p-4 bg-slate-800/60 rounded-2xl border border-white/5 flex items-center justify-between hover:border-blue-500 transition-all cursor-pointer group hover:bg-slate-800">
-                        <div class="flex items-center gap-4">
-                            <i class="fas fa-lock text-blue-400 text-lg"></i>
-                            <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">Dast_Data_Pinouts.propart</span>
-                        </div>
-                        <i class="fas fa-check-circle text-slate-600 group-hover:text-green-500"></i>
-                    </div>
-                </div>
-            </div>
-        </aside>
-    </main>
+        </div>
+    </div>
 
     <script>
-        // --- MOTOR DE GRÁFICAS V-LINK ---
-        const ctx = document.getElementById('liveChart').getContext('2d');
-        const points = 60;
+        // UUID CORRECTO PARA IOS-Vlink
+        const SERVICE_UUID = '00001ff0-0000-1000-8000-00805f9b34fb';
+        const CHARACTERISTIC_UUID = '00002af1-0000-1000-8000-00805f9b34fb'; // Característica común para escritura/lectura
         
-        const chartData = {
-            labels: Array(points).fill(''),
-            datasets: [
-                {
-                    label: 'APP 1',
-                    borderColor: '#3498ff',
-                    borderWidth: 4,
-                    pointRadius: 0,
-                    tension: 0.4,
-                    data: Array(points).fill(40),
-                    hidden: false
-                },
-                {
-                    label: 'APP 2',
-                    borderColor: '#10b981',
-                    borderWidth: 4,
-                    pointRadius: 0,
-                    tension: 0.4,
-                    data: Array(points).fill(38),
-                    hidden: false
-                },
-                {
-                    label: 'INJ',
-                    borderColor: '#f59e0b',
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    tension: 0.2,
-                    data: Array(points).fill(20),
-                    hidden: true
-                },
-                {
-                    label: 'MAF',
-                    borderColor: '#ef4444',
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    tension: 0.3,
-                    data: Array(points).fill(15),
-                    hidden: true
-                }
-            ]
-        };
-
-        const liveChart = new Chart(ctx, {
-            type: 'line',
-            data: chartData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b', font: { size: 10 } }, min: 0, max: 100 },
-                    x: { display: false }
-                },
-                plugins: { legend: { display: false } },
-                animation: false
+        let bluetoothDevice = null;
+        let bluetoothServer = null;
+        let elm327Service = null;
+        let elm327Characteristic = null;
+        let monitoringInterval = null;
+        
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateStatus(message, connected = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            if (connected) {
+                status.classList.add('connected');
+            } else {
+                status.classList.remove('connected');
             }
-        });
-
-        // Simulador de datos V-Link
-        let baseVal = 40;
-        setInterval(() => {
-            baseVal = Math.max(10, Math.min(90, baseVal + (Math.random() * 8 - 4)));
-            chartData.datasets[0].data.shift();
-            chartData.datasets[0].data.push(baseVal + (Math.random() * 2));
-            chartData.datasets[1].data.shift();
-            chartData.datasets[1].data.push(baseVal * 0.95 + (Math.random() * 4));
-            chartData.datasets[2].data.shift();
-            chartData.datasets[2].data.push(Math.random() * 20 + 10);
-            chartData.datasets[3].data.shift();
-            chartData.datasets[3].data.push(baseVal * 0.8);
-            liveChart.update();
-        }, 80);
-
-        // --- CONTROL DE VISTAS ---
-        function setView(mode) {
-            document.getElementById('liveView').classList.toggle('hidden', mode !== 'live');
-            document.getElementById('techView').classList.toggle('hidden', mode !== 'tech');
-            document.getElementById('btn-live').classList.toggle('active', mode === 'live');
-            document.getElementById('btn-tech').classList.toggle('active', mode === 'tech');
-            if(mode === 'tech') setTimeout(drawToyota, 100);
         }
-
-        function toggleSignal(idx, btn) {
-            const isHidden = !chartData.datasets[idx].hidden;
-            chartData.datasets[idx].hidden = isHidden;
-            btn.classList.toggle('active', !isHidden);
-            btn.classList.toggle('opacity-40', isHidden);
-            btn.querySelector('i').className = isHidden ? 'fas fa-circle-notch' : 'fas fa-check-circle';
-            liveChart.update();
+        
+        async function searchDevice() {
+            try {
+                addLog('Buscando dispositivo IOS-Vlink...', 'info');
+                
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    filters: [
+                        { name: 'IOS-Vlink' },
+                        { name: 'iOS V link' },
+                        { namePrefix: 'IOS' },
+                        { namePrefix: 'V-link' }
+                    ],
+                    optionalServices: [SERVICE_UUID]
+                });
+                
+                addLog(`✅ Dispositivo encontrado: ${bluetoothDevice.name}`, 'success');
+                addLog(`UUID del servicio: ${SERVICE_UUID}`, 'info');
+                updateStatus(`📱 Encontrado: ${bluetoothDevice.name}`);
+                
+                // Intentar conectar automáticamente
+                await connectDevice();
+                
+            } catch (error) {
+                addLog(`❌ Error al buscar: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
         }
-
-        // --- MOTOR CANVAS PARA DIAGRAMAS ---
-        const dCanvas = document.getElementById('diagramCanvas');
-        const dCtx = dCanvas.getContext('2d');
-
-        function drawToyota() {
-            const container = dCanvas.parentElement;
-            dCanvas.width = container.clientWidth - 40;
-            dCanvas.height = container.clientHeight - 40;
-            const cx = dCanvas.width / 2;
-            const cy = dCanvas.height / 2;
-            dCtx.clearRect(0,0,dCanvas.width,dCanvas.height);
+        
+        async function searchAllDevices() {
+            try {
+                addLog('Buscando todos los dispositivos Bluetooth...', 'info');
+                
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: [SERVICE_UUID]
+                });
+                
+                addLog(`✅ Dispositivo encontrado: ${bluetoothDevice.name}`, 'success');
+                updateStatus(`📱 Encontrado: ${bluetoothDevice.name}`);
+                
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function connectDevice() {
+            if (!bluetoothDevice) {
+                addLog('❌ Primero debes buscar un dispositivo', 'error');
+                return;
+            }
             
-            // Cuerpo ECU
-            dCtx.strokeStyle = '#3498ff';
-            dCtx.lineWidth = 5;
-            dCtx.strokeRect(cx - 180, cy - 120, 360, 200);
-            dCtx.fillStyle = 'rgba(52, 152, 255, 0.05)';
-            dCtx.fillRect(cx - 180, cy - 120, 360, 200);
-
-            // Título
-            dCtx.fillStyle = 'white';
-            dCtx.font = 'bold 24px Orbitron';
-            dCtx.textAlign = 'center';
-            dCtx.fillText('TOYOTA ECU CONTROL', cx, cy - 55);
-            dCtx.font = '12px Inter';
-            dCtx.fillText('BASE DE DATOS: PRO PART/DATE (BLINDADO)', cx, cy - 30);
-
-            // Pines
-            for(let i=0; i<14; i++) {
-                const px = (cx - 165) + (i * 25);
-                const py = cy + 40;
-                const isSignal = (i === 3 || i === 4);
-                dCtx.fillStyle = isSignal ? '#00f2ff' : '#1e293b';
-                dCtx.fillRect(px, py, 18, 40);
-                if(isSignal && i === 3) {
-                    dCtx.strokeStyle = '#00f2ff';
-                    dCtx.beginPath(); dCtx.moveTo(px+9, py+40); dCtx.lineTo(px+9, py+90); dCtx.stroke();
-                    dCtx.fillStyle = '#00f2ff'; dCtx.font = 'bold 10px Orbitron';
-                    dCtx.fillText('PIN 3: APP1', px+9, py+105);
-                }
+            try {
+                addLog('Conectando al servidor GATT...', 'info');
+                updateStatus('🔄 Conectando...');
+                
+                bluetoothServer = await bluetoothDevice.gatt.connect();
+                addLog('✅ Conectado al servidor GATT', 'success');
+                
+                addLog('Buscando servicio ELM327...', 'info');
+                elm327Service = await bluetoothServer.getPrimaryService(SERVICE_UUID);
+                addLog('✅ Servicio encontrado', 'success');
+                
+                addLog('Obteniendo característica...', 'info');
+                elm327Characteristic = await elm327Service.getCharacteristic(CHARACTERISTIC_UUID);
+                addLog('✅ Característica obtenida', 'success');
+                
+                // Inicializar ELM327
+                await initializeELM327();
+                
+                updateStatus('🟢 Conectado y listo', true);
+                addLog('🎉 Sistema conectado y operativo', 'success');
+                
+            } catch (error) {
+                addLog(`❌ Error de conexión: ${error.message}`, 'error');
+                console.error('Error:', error);
+                updateStatus('🔴 Error de conexión');
             }
         }
-
-        document.getElementById('dbSearch').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                const val = e.target.value.toLowerCase();
-                if(val.includes('toyota')) {
-                    setView('tech');
-                    const term = document.getElementById('terminal');
-                    term.innerHTML += `<p class="text-green-400 mt-2 font-bold uppercase tracking-widest text-[9px] animate-pulse">>> CARGANDO TOYOTA 2007 DESDE PRO PART/DATE...</p>`;
-                    term.scrollTop = term.scrollHeight;
-                }
+        
+        async function initializeELM327() {
+            try {
+                addLog('Inicializando ELM327...', 'info');
+                
+                // Comandos de inicialización
+                await sendCommand('ATZ');      // Reset
+                await delay(1000);
+                await sendCommand('ATE0');     // Echo off
+                await sendCommand('ATL0');     // Linefeeds off
+                await sendCommand('ATSP0');    // Auto protocol
+                await sendCommand('0100');     // Verificar conexión
+                
+                addLog('✅ ELM327 inicializado correctamente', 'success');
+            } catch (error) {
+                addLog(`❌ Error al inicializar: ${error.message}`, 'error');
             }
-        });
+        }
+        
+        async function sendCommand(command) {
+            if (!elm327Characteristic) {
+                throw new Error('No hay conexión activa');
+            }
+            
+            const encoder = new TextEncoder();
+            const commandWithCR = command + '\r';
+            await elm327Characteristic.writeValue(encoder.encode(commandWithCR));
+            
+            addLog(`→ Enviado: ${command}`, 'info');
+            
+            // Esperar respuesta
+            await delay(100);
+            const response = await elm327Characteristic.readValue();
+            const decoder = new TextDecoder();
+            const result = decoder.decode(response);
+            
+            addLog(`← Recibido: ${result.trim()}`, 'success');
+            return result;
+        }
+        
+        async function readData() {
+            if (!elm327Characteristic) {
+                addLog('❌ No hay conexión activa', 'error');
+                return;
+            }
+            
+            try {
+                addLog('📊 Leyendo datos del vehículo...', 'info');
+                
+                // Leer RPM (PID 010C)
+                const rpmResponse = await sendCommand('010C');
+                const rpm = parseRPM(rpmResponse);
+                document.getElementById('rpm').textContent = rpm;
+                
+                // Leer Velocidad (PID 010D)
+                const speedResponse = await sendCommand('010D');
+                const speed = parseSpeed(speedResponse);
+                document.getElementById('speed').textContent = speed;
+                
+                // Leer Temperatura (PID 0105)
+                const tempResponse = await sendCommand('0105');
+                const temp = parseTemp(tempResponse);
+                document.getElementById('temp').textContent = temp;
+                
+                // Leer Voltaje (PID 0142)
+                const voltageResponse = await sendCommand('0142');
+                const voltage = parseVoltage(voltageResponse);
+                document.getElementById('voltage').textContent = voltage;
+                
+                // Leer Carga del Motor (PID 0104)
+                const loadResponse = await sendCommand('0104');
+                const load = parseLoad(loadResponse);
+                document.getElementById('load').textContent = load;
+                
+                // Leer Posición del Acelerador (PID 0111)
+                const throttleResponse = await sendCommand('0111');
+                const throttle = parseThrottle(throttleResponse);
+                document.getElementById('throttle').textContent = throttle;
+                
+                addLog('✅ Datos actualizados correctamente', 'success');
+                
+            } catch (error) {
+                addLog(`❌ Error al leer datos: ${error.message}`, 'error');
+            }
+        }
+        
+        function parseRPM(response) {
+            const hex = response.replace(/\s/g, '').match(/410C([0-9A-F]{4})/i);
+            if (hex) {
+                return Math.floor(parseInt(hex[1], 16) / 4);
+            }
+            return '----';
+        }
+        
+        function parseSpeed(response) {
+            const hex = response.replace(/\s/g, '').match(/410D([0-9A-F]{2})/i);
+            if (hex) {
+                return parseInt(hex[1], 16);
+            }
+            return '----';
+        }
+        
+        function parseTemp(response) {
+            const hex = response.replace(/\s/g, '').match(/4105([0-9A-F]{2})/i);
+            if (hex) {
+                return parseInt(hex[1], 16) - 40;
+            }
+            return '----';
+        }
+        
+        function parseVoltage(response) {
+            const hex = response.replace(/\s/g, '').match(/4142([0-9A-F]{4})/i);
+            if (hex) {
+                return (parseInt(hex[1], 16) / 1000).toFixed(1);
+            }
+            return '----';
+        }
+        
+        function parseLoad(response) {
+            const hex = response.replace(/\s/g, '').match(/4104([0-9A-F]{2})/i);
+            if (hex) {
+                return Math.floor((parseInt(hex[1], 16) / 255) * 100);
+            }
+            return '----';
+        }
+        
+        function parseThrottle(response) {
+            const hex = response.replace(/\s/g, '').match(/4111([0-9A-F]{2})/i);
+            if (hex) {
+                return Math.floor((parseInt(hex[1], 16) / 255) * 100);
+            }
+            return '----';
+        }
+        
+        function startMonitoring() {
+            if (monitoringInterval) {
+                addLog('⚠️ El monitoreo ya está activo', 'info');
+                return;
+            }
+            
+            addLog('▶️ Monitoreo continuo iniciado', 'success');
+            monitoringInterval = setInterval(readData, 2000); // Actualizar cada 2 segundos
+        }
+        
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                addLog('⏸️ Monitoreo detenido', 'info');
+            }
+        }
+        
+        async function readDTC() {
+            if (!elm327Characteristic) {
+                addLog('❌ No hay conexión activa', 'error');
+                return;
+            }
+            
+            try {
+                addLog('📋 Leyendo códigos de error DTC...', 'info');
+                const response = await sendCommand('03');
+                addLog(`Códigos DTC: ${response}`, 'info');
+                alert('Códigos DTC:\n' + response);
+            } catch (error) {
+                addLog(`❌ Error al leer DTC: ${error.message}`, 'error');
+            }
+        }
+        
+        function disconnectDevice() {
+            if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+                bluetoothDevice.gatt.disconnect();
+                addLog('🔌 Dispositivo desconectado', 'info');
+                updateStatus('🔴 Desconectado');
+                stopMonitoring();
+            }
+        }
+        
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // Detectar desconexión
+        if (navigator.bluetooth) {
+            addLog('✅ Web Bluetooth API disponible', 'success');
+        } else {
+            addLog('❌ Web Bluetooth API no disponible en este navegador', 'error');
+            alert('Este navegador no soporta Web Bluetooth. Usa Chrome, Edge o Opera en Android/Windows.');
+        }
     </script>
 </body>
 </html>
