@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+eu<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -428,7 +428,7 @@
             addLog(`→ Enviado: ${command}`, 'info');
             
             // Esperar respuesta
-            await delay(100);
+            await delay(800);
             const response = await elm327Characteristic.readValue();
             const decoder = new TextDecoder();
             const result = decoder.decode(response);
