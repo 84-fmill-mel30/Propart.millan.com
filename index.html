@@ -817,20 +817,18 @@ async function printTicket() {
     }
   }
 }
+// Esta función es el "relevador" que pasa el precio del tabulador al ticket de PrintMX
+function inyectarPrecio(servicio, costo) {
+    // Localiza el campo de "Descripción" y "Precio" en tu PrintMX
+    document.querySelector('input[placeholder="Descripción del artículo"]').value = servicio;
+    document.querySelector('input[placeholder="$"]').value = costo;
+    
+    // Ejecuta el click del botón "+ Agregar artículo" automáticamente
+    document.querySelector('button[onclick*="agregar"]').click();
+    
+    alert(servicio + " agregado al ticket.");
+  }
 
-// ═══ SAVE/LOAD PRODUCTS ═══
-function saveProduct() {
-  var name = document.getElementById('lblProduct').value.trim();
-  var price = document.getElementById('lblPrice').value;
-  var sku = document.getElementById('lblSku').value;
-  var brand = document.getElementById('lblBrand').value;
-  if(!name) { toast('Escribe el nombre del producto'); return; }
-  
-  savedProducts.push({ name:name, price:price, sku:sku, brand:brand });
-  try { localStorage.setItem('printmx_products', JSON.stringify(savedProducts)); } catch(e){}
-  renderSaved();
-  toast('Producto guardado');
-}
 
 function loadSaved() {
   try {
