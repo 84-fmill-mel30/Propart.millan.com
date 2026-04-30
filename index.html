@@ -865,7 +865,15 @@ function loadProduct(idx) {
   updateLabelPreview();
   toast('Cargado: ' + p.name);
 }
-
+// ═══ SAVE/LOAD PRODUCTS ═══
+function saveProduct() {
+  var name = document.getElementById('lblProduct').value.trim();
+  var price = document.getElementById('lblPrice').value;
+  var sku = document.getElementById('lblSku').value;
+  var brand = document.getElementById('lblBrand').value;
+  if(!name) { toast('Escribe el nombre del producto'); return; }
+  
+  
 function clearSaved() {
   if(!confirm('¿Borrar todos los productos guardados?')) return;
   savedProducts = [];
@@ -917,6 +925,11 @@ function toast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+  savedProducts.push({ name:name, price:price, sku:sku, brand:brand });
+  try { localStorage.setItem('printmx_products', JSON.stringify(savedProducts)); } catch(e){}
+  renderSaved();
+  toast('Producto guardado');
 }
 </script>
 </body>
